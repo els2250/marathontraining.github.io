@@ -1,0 +1,15 @@
+---
+title: "Descriptive Statistics"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+<br/>  
+
+### Description of Data?? (how things are operationalized)
+
+### Mileage per Week
+
+### Mileage per Month

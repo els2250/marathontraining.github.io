@@ -1,0 +1,19 @@
+---
+title: "In-Depth Analysis of Emma's Marathon Training"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+<br/>  
+
+### Introduction & Motivation
+
+### Group Members
+
+* Gwyneth Wei (gw2442)
+* Emma Sexton (els2250)
+* Olivia Wang (hw2852)
+* Mayuri Albal (ma4197)
+
