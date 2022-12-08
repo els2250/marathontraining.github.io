@@ -9,10 +9,16 @@ navbar:
       href: descriptive_stats.html
     - text: "Exploratory Analyses"
       href: exploratory_analyses.html
+      menu:
+      - text: "Tab to nowhere"
     - icon: fa-envelope fa-lg
       href: mailto:<gw2442@cumc.columbia.edu; els2250@cumc.columbia.edu; hw2852@cumc.columbia.edu; ma4197@cumc.columbia.edu>
     - icon: fa-github fa-lg
       href: https://github.com/els2250/marathontraining.github.io
+    - icon: fa-thin fa-person-running
+      href: https://www.strava.com/
 output:
   html_document:
     theme: cosmo
+    
+    
