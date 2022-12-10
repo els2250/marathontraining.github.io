@@ -1003,7 +1003,7 @@ cv_df %&gt;%
     values_to = &quot;rmse&quot;, 
     names_prefix = &quot;rmse_&quot;) %&gt;% 
   ggplot(aes(x = model, y = rmse, color = c(&quot;#FFA500&quot;))) +
-  geom_boxplot() + 
+  geom_boxplot(color = c(&quot;#FFA500&quot;)) + 
   labs(
     title = &quot;Root Mean Squared Errors Distributions for Emma&#39;s Average Speed&quot;, 
     x = &quot;Fitted Model&quot;, 
@@ -1093,7 +1093,7 @@ cv_df %&gt;%
     values_to = &quot;rmse&quot;, 
     names_prefix = &quot;rmse_&quot;) %&gt;% 
   ggplot(aes(x = model, y = rmse, color = c(&quot;#FFA500&quot;))) +
-  geom_boxplot() + 
+  geom_boxplot(color = c(&quot;#FFA500&quot;)) + 
   labs(
     title = &quot;Root Mean Squared Errors Distributions for Emma&#39;s Relative Effort&quot;, 
     x = &quot;Fitted Model&quot;, 

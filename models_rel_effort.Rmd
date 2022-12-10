@@ -99,7 +99,7 @@ cv_df %>%
     values_to = "rmse", 
     names_prefix = "rmse_") %>% 
   ggplot(aes(x = model, y = rmse, color = c("#FFA500"))) +
-  geom_boxplot() + 
+  geom_boxplot(color = c("#FFA500")) + 
   labs(
     title = "Root Mean Squared Errors Distributions for Emma's Relative Effort", 
     x = "Fitted Model", 
