@@ -434,17 +434,18 @@ The leaflet plot above demonstrates Emma's NYCM racing path. Each marker indicat
 
 ## Additional Analysis
 
-### Performance Regression Models
+
+### Speed Regression Models
 
 ```{r, warning = FALSE, message = FALSE, error = FALSE}
-speed_temp = lm(average_speed ~ weather_temperature, data = tidy_training)
-
-speed_humidity = lm(average_speed ~ humidity, data = tidy_training)
-
-speed_temp_humidity_int = lm(average_speed ~ (weather_temperature + humidity)^3, data = tidy_training)
+fit1 = lm(average_speed ~ weather_temperature, data = tidy_training)
+fit2 = lm(average_speed ~ dewpoint, data = tidy_training)
+fit3 = lm(average_speed ~ humidity, data = tidy_training)
+fit4 = lm(average_speed ~ (elevation_gain + wind_speed)^3, data = tidy_training)
+fit5 = lm(average_speed ~ (weather_temperature + dewpoint)^3, data = tidy_training)
 ```
 
-### Cross-Validation
+### Cross-Validation: Speed
 
 ```{r, warning = FALSE, message = FALSE, error = FALSE}
 cv_df = 
@@ -452,16 +453,18 @@ cv_df =
 
 cv_df = cv_df %>% 
   mutate(
-    speed_temp_mod      = map(.x = train, ~lm(average_speed ~ weather_temperature, data = .x)), 
-    speed_humidity_mod   = map(.x = train, ~lm(average_speed ~ humidity, data = .x)), 
-    speed_temp_humidity_int_mod = map(.x = train, ~lm(average_speed ~ (weather_temperature + humidity)^3, data = .x))) %>% 
+    mod1 = map(.x = train, ~lm(average_speed ~ weather_temperature, data = .x)), 
+    mod2 = map(.x = train, ~lm(average_speed ~ dewpoint, data = .x)), 
+    mod3 = map(.x = train, ~lm(average_speed ~ humidity, data = .x)), 
+    mod4 = map(.x = train, ~lm(average_speed ~ (elevation_gain + wind_speed)^3, data = .x)),
+    mod5 = map(.x = train, ~lm(average_speed ~ (weather_temperature + dewpoint)^3, data = .x))) %>% 
   mutate(
-    rmse_speed_temp = map2_dbl(.x = speed_temp_mod, .y = test, ~rmse(model = .x, data = .y)), 
-    rmse_speed_humidity = map2_dbl(.x = speed_humidity_mod, .y = test, ~rmse(model = .x, data = .y)), 
-    rmse_speed_temp_humidity_int = map2_dbl(.x = speed_temp_humidity_int_mod, .y = test, ~rmse(model = .x, data = .y)))
-```
+    rmse_mod1 = map2_dbl(.x = mod1, .y = test, ~rmse(model = .x, data = .y)), 
+    rmse_mod2 = map2_dbl(.x = mod2, .y = test, ~rmse(model = .x, data = .y)), 
+    rmse_mod3 = map2_dbl(.x = mod3, .y = test, ~rmse(model = .x, data = .y)),
+    rmse_mod4 = map2_dbl(.x = mod4, .y = test, ~rmse(model = .x, data = .y)),
+    rmse_mod5 = map2_dbl(.x = mod5, .y = test, ~rmse(model = .x, data = .y)))
 
-```{r, warning = FALSE, message = FALSE, error = FALSE}
 cv_df %>% 
   select(starts_with("rmse")) %>% 
   pivot_longer(
@@ -479,10 +482,74 @@ cv_df %>%
         panel.background = element_blank(), 
         legend.position = "none", 
         panel.grid.major = element_line(color = "light grey", linetype = "dashed"),
-        plot.title = element_text(hjust = 0.5)) + 
-  scale_x_discrete(labels = c("speed_humidity" = "Humidity Model", 
-                              "speed_temp" = "Temperature Model", 
-                              "speed_temp_humidity_int" = "Temperature, Humidity, Interaction Model"))
+        plot.title = element_text(hjust = 0.5)) +
+  scale_x_discrete(labels = c("mod1" = "Temperature Model", 
+                              "mod2" = "Dewpoint Model", 
+                              "mod3" = "Humidity Model",
+                              "mod4" = "Elevation, Wind, \n Interactions",
+                              "mod5" = "Temperature, Dewpoint, \n Interactions"))
+  
+summary(fit1)
 ```
+
+
+### Relative Effort Regression Models
+```{r, warning = FALSE, message = FALSE, error = FALSE}
+fit1 = lm(relative_effort ~ weather_temperature, data = tidy_training)
+fit2 = lm(relative_effort ~ dewpoint, data = tidy_training)
+fit3 = lm(relative_effort ~ humidity, data = tidy_training)
+fit4 = lm(relative_effort ~ (elevation_gain + wind_speed)^3, data = tidy_training)
+fit5 = lm(relative_effort ~ (weather_temperature + dewpoint + humidity)^4, data = tidy_training)
+```
+
+
+### Cross-Validation: Relative Effort
+
+```{r, warning = FALSE, message = FALSE, error = FALSE}
+cv_df = 
+  crossv_mc(tidy_training, 100)
+
+cv_df = cv_df %>% 
+  mutate(
+    mod1 = map(.x = train, ~lm(relative_effort ~ weather_temperature, data = .x)), 
+    mod2 = map(.x = train, ~lm(relative_effort ~ dewpoint, data = .x)), 
+    mod3 = map(.x = train, ~lm(relative_effort ~ humidity, data = .x)), 
+    mod4 = map(.x = train, ~lm(relative_effort ~ (elevation_gain + wind_speed)^3, data = .x)),
+    mod5 = map(.x = train, ~lm(relative_effort ~ (weather_temperature + dewpoint + humidity)^4, data = .x))) %>% 
+  mutate(
+    rmse_mod1 = map2_dbl(.x = mod1, .y = test, ~rmse(model = .x, data = .y)), 
+    rmse_mod2 = map2_dbl(.x = mod2, .y = test, ~rmse(model = .x, data = .y)), 
+    rmse_mod3 = map2_dbl(.x = mod3, .y = test, ~rmse(model = .x, data = .y)),
+    rmse_mod4 = map2_dbl(.x = mod4, .y = test, ~rmse(model = .x, data = .y)),
+    rmse_mod5 = map2_dbl(.x = mod5, .y = test, ~rmse(model = .x, data = .y)))
+
+cv_df %>% 
+  select(starts_with("rmse")) %>% 
+  pivot_longer(
+    everything(), 
+    names_to = "model", 
+    values_to = "rmse", 
+    names_prefix = "rmse_") %>% 
+  ggplot(aes(x = model, y = rmse, color = c("#FFA500"))) +
+  geom_boxplot() + 
+  labs(
+    title = "Root Mean Squared Errors Distributions for Emma's Relative Effort", 
+    x = "Fitted Model", 
+    y = "RMSE")  + 
+  theme(axis.line = element_line(color = "grey"), 
+        panel.background = element_blank(), 
+        legend.position = "none", 
+        panel.grid.major = element_line(color = "light grey", linetype = "dashed"),
+        plot.title = element_text(hjust = 0.5)) +
+  scale_x_discrete(labels = c("mod1" = "Temperature Model", 
+                              "mod2" = "Dewpoint Model", 
+                              "mod3" = "Humidity Model",
+                              "mod4" = "Elevation, Wind, \n Interactions",
+                              "mod5" = "Temperature, Dewpoint, \n Humidity, Interactions"))
+
+summary(fit4)
+```
+
+
 
 ## Discussion
