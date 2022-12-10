@@ -5,10 +5,10 @@ navbar:
   right:
     - text: "Final Report"
       href: backup.html
-    - text: "Interactive Map"
-      href: descriptive_stats.html
     - text: "Data Visualization"
       href: exploratory_analyses.html
+    - text: "Interactive Map"
+      href: descriptive_stats.html
     - text: "Models"
       menu:
       - text: "Regression Models: Speed"
