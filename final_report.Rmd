@@ -329,6 +329,15 @@ mutate(group = case_when(
 Recode
 
 ```{r}
+marathon_geo =
+  marathon_day %>% 
+  mutate(
+    latitude  = position_lat,
+    longitude = position_long) %>% 
+  select(-position_lat, -position_long)
+```
+
+```{r}
 marathon_speed =
 marathon_geo %>% 
   group_by(group) %>% 

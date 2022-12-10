@@ -568,8 +568,233 @@ variables ‘activity_name’ and ‘activity_description’.</p>
 observations and 21 variables. Variables included were:activity_id,
 date, time, distance_km, elapsed_time_min, max_speed, average_speed,
 max_heart_rate, average_heart_rate, relative_effort, elevation_gain,
-elevation_loss, max_grade, average_grade, max_cadence, averag_cadence,
+elevation_loss, max_grade, average_grade, max_cadence, average_cadence,
 calories, weather_temperature, dewpoint, humidity, and wind_speed.</p>
+</div>
+</div>
+<div
+id="exploratory-analysis-visualizations-summaries-and-exploratory-statistical-analyses.-justify-the-steps-you-took-and-show-any-major-changes-to-your-ideas."
+class="section level4">
+<h4>Exploratory Analysis: Visualizations, summaries, and exploratory
+statistical analyses. Justify the steps you took, and show any major
+changes to your ideas.</h4>
+<ul>
+<li>Mileage over time (Intro) - Individual monthly or weekly
+mileage</li>
+<li>Rounded mileage to closest mile, density plot of how many times you
+ran a certain mileage or violin</li>
+<li>Temperature vs average speed/average heart rate/relative effort (all
+of these) – * Elevation vs average speed/relative effort</li>
+<li>Mapping running trails (plotly/gis(?)) - only marathon route, map
+cadence/heart rate</li>
+<li>Predict mph in marathon using temperature, humidity, relative
+effort, etc.</li>
+</ul>
+<p>Side note: Rest days are not in strava data - create data set with
+all dates. we make a variable that is yes/no for rest days.</p>
+</div>
+<div id="mileage-over-time" class="section level4">
+<h4>Mileage over time</h4>
+<pre class="r"><code>tidy_training = tidy_training %&gt;% 
+  mutate(week = as.numeric(strftime(date, format = &quot;%V&quot;)) - 13) %&gt;% 
+  group_by(week) %&gt;%
+  mutate(weekly_distance_km = sum(distance_km))
+
+tidy_training %&gt;%
+  ggplot(aes(x = week, y = weekly_distance_km)) +
+  geom_point(color = c(&quot;#FFA500&quot;)) +
+  geom_line(color = c(&quot;#FFA500&quot;)) + 
+  labs(
+    title = &quot;Weekly Distance Ran by Emma (km)&quot;,
+    x = &quot;Week&quot;, 
+    y = &quot;Distance (km)&quot;) + 
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 5)) + 
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 5)) +
+  theme(axis.line = element_line(color = &quot;grey&quot;), 
+        panel.background = element_blank(), 
+        legend.position = &quot;none&quot;, 
+        panel.grid.major = element_line(color = &quot;light grey&quot;, linetype = &quot;dashed&quot;),
+        plot.title = element_text(hjust = 0.5))</code></pre>
+<p><img src="final_report_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+</div>
+<div id="mileage-density-plot" class="section level4">
+<h4>Mileage Density Plot</h4>
+<pre class="r"><code>tidy_training %&gt;% 
+  ggplot(aes(x = distance_km), color = c(&quot;#FFA500&quot;)) +
+  geom_density(alpha = 0.5, fill = c(&quot;#FFA500&quot;)) + 
+  labs(
+    title = &quot;Density of Daily Distances Ran by Emma (km)&quot;,
+    x = &quot;Distance (km)&quot;, 
+    y = &quot;Density&quot;) + 
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 5)) + 
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 5)) +
+  theme(axis.line = element_line(color = &quot;grey&quot;), 
+        panel.background = element_blank(), 
+        legend.position = &quot;none&quot;, 
+        panel.grid.major = element_line(color = &quot;light grey&quot;, linetype = &quot;dashed&quot;),
+        plot.title = element_text(hjust = 0.5))</code></pre>
+<p><img src="final_report_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+</div>
+<div id="choose-your-graph-drop-down-list-of-y-and-x"
+class="section level4">
+<h4>Choose Your Graph (Drop down list of Y and X)</h4>
+<p>Temperature vs average speed/average heart rate/relative effort (all
+of these)</p>
+<div id="temperature-vs.-average-speed" class="section level5">
+<h5>Temperature vs. Average Speed</h5>
+<pre class="r"><code>tidy_training %&gt;% 
+  ggplot(aes(x = weather_temperature, y = average_speed)) + 
+  geom_point(color = c(&quot;#FFA500&quot;)) +
+  geom_smooth(se = FALSE, color = &quot;dark grey&quot;) + 
+    labs(
+    title = &quot;Temperature (C) vs. Emma&#39;s Average Speed&quot;,
+    x = &quot;Temperature (C)&quot;, 
+    y = &quot;Average Speed&quot;) + 
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 5)) + 
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 5)) +
+  theme(axis.line = element_line(color = &quot;grey&quot;), 
+        panel.background = element_blank(), 
+        legend.position = &quot;none&quot;, 
+        panel.grid.major = element_line(color = &quot;light grey&quot;, linetype = &quot;dashed&quot;),
+        plot.title = element_text(hjust = 0.5))</code></pre>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39; and formula &#39;y ~ x&#39;</code></pre>
+<pre><code>## Warning: Removed 23 rows containing non-finite values (stat_smooth).</code></pre>
+<pre><code>## Warning: Removed 23 rows containing missing values (geom_point).</code></pre>
+<p><img src="final_report_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+</div>
+<div id="temperature-as-a-predictor-for-emmas-performance"
+class="section level5">
+<h5>Temperature as a Predictor for Emma’s Performance</h5>
+<pre class="r"><code>temp_avg_speed = 
+  tidy_training %&gt;% 
+  ggplot(aes(x = weather_temperature, y = average_speed)) + 
+  geom_point(color = c(&quot;#FFA500&quot;)) +
+  geom_smooth(se = FALSE, color = &quot;dark grey&quot;) + 
+    labs(
+    x = &quot;Temperature (C)&quot;, 
+    y = &quot;Average Speed&quot;) + 
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 5)) + 
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 5)) +
+  theme(axis.line = element_line(color = &quot;grey&quot;), 
+        panel.background = element_blank(), 
+        legend.position = &quot;none&quot;, 
+        panel.grid.major = element_line(color = &quot;light grey&quot;, linetype = &quot;dashed&quot;),
+        plot.title = element_text(hjust = 0.5)) + 
+  ggtitle(&quot;Temperature (C) vs. Emma&#39;s Average Speed&quot;)
+
+temp_avg_hrt = 
+  tidy_training %&gt;% 
+  ggplot(aes(x = weather_temperature, y = average_heart_rate)) + 
+  geom_point(color = c(&quot;#FFA500&quot;)) +
+  geom_smooth(se = FALSE, color = &quot;dark grey&quot;) + 
+    labs(
+    x = &quot;Temperature (C)&quot;, 
+    y = &quot;Average Heart Rate (BPM)&quot;) + 
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 5)) + 
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 5)) +
+  theme(axis.line = element_line(color = &quot;grey&quot;), 
+        panel.background = element_blank(), 
+        legend.position = &quot;none&quot;, 
+        panel.grid.major = element_line(color = &quot;light grey&quot;, linetype = &quot;dashed&quot;),
+        plot.title = element_text(hjust = 0.5)) + 
+  ggtitle(&quot;Temperature (C) vs.\n Emma&#39;s Average Heart Rate (BPM)&quot;)
+
+temp_rel_effort = 
+  tidy_training %&gt;% 
+  ggplot(aes(x = weather_temperature, y = relative_effort)) + 
+  geom_point(color = c(&quot;#FFA500&quot;)) +
+  geom_smooth(se = FALSE, color = &quot;dark grey&quot;) + 
+    labs(
+    x = &quot;Temperature (C)&quot;, 
+    y = &quot;Relative Effort&quot;) + 
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 5)) + 
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 5)) +
+  theme(axis.line = element_line(color = &quot;grey&quot;), 
+        panel.background = element_blank(), 
+        legend.position = &quot;none&quot;, 
+        panel.grid.major = element_line(color = &quot;light grey&quot;, linetype = &quot;dashed&quot;),
+        plot.title = element_text(hjust = 0.5)) + 
+  ggtitle(&quot;Temperature (C) vs.\n Emma&#39;s Relative Effort&quot;)
+
+temp_avg_speed /
+(temp_avg_hrt | temp_rel_effort)</code></pre>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39; and formula &#39;y ~ x&#39;</code></pre>
+<pre><code>## Warning: Removed 23 rows containing non-finite values (stat_smooth).</code></pre>
+<pre><code>## Warning: Removed 23 rows containing missing values (geom_point).</code></pre>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39; and formula &#39;y ~ x&#39;</code></pre>
+<pre><code>## Warning: Removed 23 rows containing non-finite values (stat_smooth).
+## Removed 23 rows containing missing values (geom_point).</code></pre>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39; and formula &#39;y ~ x&#39;</code></pre>
+<pre><code>## Warning: Removed 23 rows containing non-finite values (stat_smooth).
+## Removed 23 rows containing missing values (geom_point).</code></pre>
+<p><img src="final_report_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+</div>
+<div id="humidity-as-a-predictor-for-emmas-performance"
+class="section level5">
+<h5>Humidity as a Predictor for Emma’s Performance</h5>
+<pre class="r"><code>humid_avg_speed = 
+  tidy_training %&gt;% 
+  ggplot(aes(x = humidity, y = average_speed)) + 
+  geom_point(color = c(&quot;#FFA500&quot;)) +
+  geom_smooth(se = FALSE, color = &quot;dark grey&quot;) + 
+    labs(
+    x = &quot;Humidity (%)&quot;, 
+    y = &quot;Average Speed&quot;) + 
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 5)) + 
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 5)) +
+  theme(axis.line = element_line(color = &quot;grey&quot;), 
+        panel.background = element_blank(), 
+        legend.position = &quot;none&quot;, 
+        panel.grid.major = element_line(color = &quot;light grey&quot;, linetype = &quot;dashed&quot;),
+        plot.title = element_text(hjust = 0.5)) + 
+  ggtitle(&quot;Humidity (%) vs. Emma&#39;s Average Speed&quot;)
+
+humid_avg_hrt = 
+  tidy_training %&gt;% 
+  ggplot(aes(x = humidity, y = average_heart_rate)) + 
+  geom_point(color = c(&quot;#FFA500&quot;)) +
+  geom_smooth(se = FALSE, color = &quot;dark grey&quot;) + 
+    labs(
+    x = &quot;Humidity (%)&quot;, 
+    y = &quot;Average Heart Rate (BPM)&quot;) + 
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 5)) + 
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 5)) +
+  theme(axis.line = element_line(color = &quot;grey&quot;), 
+        panel.background = element_blank(), 
+        legend.position = &quot;none&quot;, 
+        panel.grid.major = element_line(color = &quot;light grey&quot;, linetype = &quot;dashed&quot;),
+        plot.title = element_text(hjust = 0.5)) + 
+  ggtitle(&quot;Humidity (%) vs.\n Emma&#39;s Average Heart Rate (BPM)&quot;)
+
+humid_rel_effort = 
+  tidy_training %&gt;% 
+  ggplot(aes(x = humidity, y = relative_effort)) + 
+  geom_point(color = c(&quot;#FFA500&quot;)) +
+  geom_smooth(se = FALSE, color = &quot;dark grey&quot;) + 
+    labs(
+    x = &quot;Humidity (%)&quot;, 
+    y = &quot;Relative Effort&quot;) + 
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 5)) + 
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 5)) +
+  theme(axis.line = element_line(color = &quot;grey&quot;), 
+        panel.background = element_blank(), 
+        legend.position = &quot;none&quot;, 
+        panel.grid.major = element_line(color = &quot;light grey&quot;, linetype = &quot;dashed&quot;),
+        plot.title = element_text(hjust = 0.5)) + 
+  ggtitle(&quot;Humidity (%) vs.\n Emma&#39;s Relative Effort&quot;)
+
+humid_avg_speed /
+(humid_avg_hrt | humid_rel_effort)</code></pre>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39; and formula &#39;y ~ x&#39;</code></pre>
+<pre><code>## Warning: Removed 23 rows containing non-finite values (stat_smooth).</code></pre>
+<pre><code>## Warning: Removed 23 rows containing missing values (geom_point).</code></pre>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39; and formula &#39;y ~ x&#39;</code></pre>
+<pre><code>## Warning: Removed 23 rows containing non-finite values (stat_smooth).
+## Removed 23 rows containing missing values (geom_point).</code></pre>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39; and formula &#39;y ~ x&#39;</code></pre>
+<pre><code>## Warning: Removed 23 rows containing non-finite values (stat_smooth).
+## Removed 23 rows containing missing values (geom_point).</code></pre>
+<p><img src="final_report_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
 <p><em>Map of Marathon Route with Averages</em> NOTE: Install Leaflet
 Prior to Running</p>
 <p>Loading and Cleaning the Data</p>
@@ -627,10 +852,10 @@ mutate(group = case_when(
 marathon_geo %&gt;% 
   group_by(group) %&gt;% 
   mutate(
-    speed = 
-  mean(enhanced_speed))</code></pre>
+    speed_km = 
+  enhanced_speed*2.237)</code></pre>
 <p>Aggregate Data</p>
-<pre class="r"><code>agg = aggregate(marathon_geo,
+<pre class="r"><code>agg = aggregate(marathon_speed,
                 by = list(marathon_geo$group),
                 FUN = mean)</code></pre>
 <pre><code>## Warning in mean.default(X[[i]], ...): argument is not numeric or logical:
@@ -711,21 +936,6 @@ marathon_geo %&gt;%
 ## Warning in mean.default(X[[i]], ...): argument is not numeric or logical:
 ## returning NA</code></pre>
 <p>Aggregate Leaflet Plot</p>
-<pre class="echo"><code>leaflet() %&gt;% 
-  addTiles() %&gt;% 
-  addCircleMarkers(data = agg,
-             lng = ~longitude,
-             lat = ~latitude,
-             label = ~Group.1,
-             radius = 7,
-             color = &quot;orange&quot;,
-             stroke = TRUE, fillOpacity = 0.75,
-             popup = ~paste(&quot;Mile:&quot;, Group.1,
-                            &quot;&lt;br&gt;Speed:&quot;, enhanced_speed,
-                            &quot;&lt;br&gt;HR:&quot;, heart_rate,
-                             &quot;&lt;br&gt;Cadence:&quot;, cadence,
-                            &quot;&lt;br&gt;Altitude:&quot;, enhanced_altitude)) %&gt;% 
-  addProviderTiles(providers$CartoDB.Positron)</code></pre>
 <pre class="r"><code>leaflet() %&gt;% 
   addTiles() %&gt;% 
   addCircleMarkers(data = agg,
@@ -736,20 +946,15 @@ marathon_geo %&gt;%
              color = &quot;orange&quot;,
              stroke = TRUE, fillOpacity = 0.75,
              popup = ~paste(&quot;Mile:&quot;, Group.1,
-                            &quot;&lt;br&gt;Speed:&quot;, enhanced_speed,
+                            &quot;&lt;br&gt;Speed:&quot;, speed_km,
                             &quot;&lt;br&gt;HR:&quot;, heart_rate,
                              &quot;&lt;br&gt;Cadence:&quot;, cadence,
                             &quot;&lt;br&gt;Altitude:&quot;, enhanced_altitude)) %&gt;% 
   addProviderTiles(providers$CartoDB.Positron)</code></pre>
 <pre><code>## Warning in validateCoords(lng, lat, funcName): Data contains 1 rows with either
 ## missing or invalid lat/lon values and will be ignored</code></pre>
-<<<<<<< HEAD
-<div id="htmlwidget-d700aec95965db03286e" style="width:672px;height:480px;" class="leaflet html-widget"></div>
-<script type="application/json" data-for="htmlwidget-d700aec95965db03286e">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"https://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addCircleMarkers","args":[[40.6104348705628,40.7042159239592,40.7164656348145,40.728277819874,40.740826228118,40.7491534880795,40.7558571904419,40.7777123779879,40.7903228550433,40.8023561141454,40.6192627834549,40.8118997489457,40.8102504578455,40.8001325806757,40.7882020822061,40.7763461387941,40.766959590201,40.770384692587,null,40.6444014760309,40.6557787290627,40.6671305434582,40.6794894834151,40.6876716191673,40.6921380146503,40.6043989839213],[-74.0346232919979,-73.9608535200188,-73.9589246148317,-73.9524508345938,-73.9525773309703,-73.9450712946021,-73.9528505667326,-73.9487948260759,-73.939629788009,-73.9298666665563,-74.0288426203294,-73.928230043045,-73.9394263029525,-73.9473303446644,-73.9557053759358,-73.966941702771,-73.9756988926056,-73.9788563751305,null,-74.0148388704929,-74.0029969833497,-73.9916699058621,-73.9818277620092,-73.9710569978992,-73.9571167532644,-74.0517789316213],7,null,null,{"interactive":true,"className":"","stroke":true,"color":"orange","weight":5,"opacity":0.5,"fill":true,"fillColor":"orange","fillOpacity":0.75},null,null,["Mile: 1 <br>Speed: 3.20354954954955 <br>HR: 169.648648648649 <br>Cadence: 79.945945945946 <br>Altitude: 55.3783783783784","Mile: 10 <br>Speed: 2.64213636363636 <br>HR: 173.840909090909 <br>Cadence: 78.7045454545455 <br>Altitude: 33.7590909090909","Mile: 11 <br>Speed: 2.75648031496063 <br>HR: 177.094488188976 <br>Cadence: 82.5984251968504 <br>Altitude: 16.0708661417323","Mile: 12 <br>Speed: 2.9046814159292 <br>HR: 177.964601769911 <br>Cadence: 80.9469026548673 <br>Altitude: 18.8495575221239","Mile: 13 <br>Speed: 2.99240178571429 <br>HR: 178.732142857143 <br>Cadence: 82.5803571428571 <br>Altitude: 12.6339285714286","Mile: 14 <br>Speed: 2.53381690140845 <br>HR: 176.633802816901 <br>Cadence: 82.3943661971831 <br>Altitude: 32.8197183098592","Mile: 15 <br>Speed: 1.48210550458716 <br>HR: 139.56880733945 <br>Cadence: 79.0596330275229 <br>Altitude: 24.3201834862385","Mile: 17 <br>Speed: 2.78109322033898 <br>HR: 171.686440677966 <br>Cadence: 82.7966101694915 <br>Altitude: 42.0186440677966","Mile: 18 <br>Speed: 2.52275384615385 <br>HR: 150.307692307692 <br>Cadence: 72.3923076923077 <br>Altitude: 23.2507692307692","Mile: 19 <br>Speed: 2.35978125 <br>HR: 145.89375 <br>Cadence: 71.54375 <br>Altitude: 24.7425","Mile: 2 <br>Speed: 3.1041376146789 <br>HR: 173 <br>Cadence: 80.8623853211009 <br>Altitude: 28.9633027522936","Mile: 20 <br>Speed: 2.65359712230216 <br>HR: 160.647482014388 <br>Cadence: 81.4244604316547 <br>Altitude: 13.6474820143885","Mile: 21 <br>Speed: 2.79764885496183 <br>HR: 159.206106870229 <br>Cadence: 81.8015267175573 <br>Altitude: 27.1435114503817","Mile: 22 <br>Speed: 2.59456390977444 <br>HR: 167.353383458647 <br>Cadence: 80.4586466165414 <br>Altitude: 46.0736842105263","Mile: 23 <br>Speed: 2.48124812030075 <br>HR: 172.233082706767 <br>Cadence: 76.6842105263158 <br>Altitude: 73.8285714285714","Mile: 24 <br>Speed: 2.42738686131387 <br>HR: 173.737226277372 <br>Cadence: 71.2116788321168 <br>Altitude: 26.043795620438","Mile: 25 <br>Speed: 2.64834161490683 <br>HR: 176.484472049689 <br>Cadence: 80.0683229813665 <br>Altitude: 7.53540372670807","Mile: 26-Finish <br>Speed: 3.0642037037037 <br>HR: 183.296296296296 <br>Cadence: 86.1481481481482 <br>Altitude: 19.3185185185185","Mile: 3 <br>Speed: NA <br>HR: 174.938053097345 <br>Cadence: 80.4070796460177 <br>Altitude: 33.7256637168142","Mile: 4 <br>Speed: 3.1024953271028 <br>HR: 175.383177570093 <br>Cadence: 80.4485981308411 <br>Altitude: 27.985046728972","Mile: 5 <br>Speed: 3.03915789473684 <br>HR: 172.69298245614 <br>Cadence: 81.3245614035088 <br>Altitude: 14.8368421052632","Mile: 6 <br>Speed: 3.06128070175439 <br>HR: 175.333333333333 <br>Cadence: 81.780701754386 <br>Altitude: 26.0666666666667","Mile: 7 <br>Speed: 2.97276470588235 <br>HR: 175.352941176471 <br>Cadence: 79.4705882352941 <br>Altitude: 22.6436974789916","Mile: 8 <br>Speed: 3.05102479338843 <br>HR: 177.280991735537 <br>Cadence: 81.7851239669422 <br>Altitude: 42.1074380165289","Mile: 9 <br>Speed: 3.02143965517241 <br>HR: 177.534482758621 <br>Cadence: 82.5948275862069 <br>Altitude: 37.3586206896552","Mile: Start <br>Speed: 2.9199435483871 <br>HR: 168.548387096774 <br>Cadence: 80.9112903225806 <br>Altitude: 68.2774193548387"],null,["1","10","11","12","13","14","15","17","18","19","2","20","21","22","23","24","25","26-Finish","3","4","5","6","7","8","9","Start"],{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addProviderTiles","args":["CartoDB.Positron",null,null,{"errorTileUrl":"","noWrap":false,"detectRetina":false}]}],"limits":{"lat":[40.6043989839213,40.8118997489457],"lng":[-74.0517789316213,-73.928230043045]}},"evals":[],"jsHooks":[]}</script>
-=======
-<div id="htmlwidget-5a267e35a159455be063" style="width:672px;height:480px;" class="leaflet html-widget"></div>
-<script type="application/json" data-for="htmlwidget-5a267e35a159455be063">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"https://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addCircleMarkers","args":[[40.6104348705628,40.7042159239592,40.7164656348145,40.728277819874,40.740826228118,40.7491534880795,40.7558571904419,40.7777123779879,40.7903228550433,40.8023561141454,40.6192627834549,40.8118997489457,40.8102504578455,40.8001325806757,40.7882020822061,40.7763461387941,40.766959590201,40.770384692587,null,40.6444014760309,40.6557787290627,40.6671305434582,40.6794894834151,40.6876716191673,40.6921380146503,40.6043989839213],[-74.0346232919979,-73.9608535200188,-73.9589246148317,-73.9524508345938,-73.9525773309703,-73.9450712946021,-73.9528505667326,-73.9487948260759,-73.939629788009,-73.9298666665563,-74.0288426203294,-73.928230043045,-73.9394263029525,-73.9473303446644,-73.9557053759358,-73.966941702771,-73.9756988926056,-73.9788563751305,null,-74.0148388704929,-74.0029969833497,-73.9916699058621,-73.9818277620092,-73.9710569978992,-73.9571167532644,-74.0517789316213],7,null,null,{"interactive":true,"className":"","stroke":true,"color":"orange","weight":5,"opacity":0.5,"fill":true,"fillColor":"orange","fillOpacity":0.75},null,null,["Mile: 1 <br>Speed: 3.20354954954955 <br>HR: 169.648648648649 <br>Cadence: 79.945945945946 <br>Altitude: 55.3783783783784","Mile: 10 <br>Speed: 2.64213636363636 <br>HR: 173.840909090909 <br>Cadence: 78.7045454545455 <br>Altitude: 33.7590909090909","Mile: 11 <br>Speed: 2.75648031496063 <br>HR: 177.094488188976 <br>Cadence: 82.5984251968504 <br>Altitude: 16.0708661417323","Mile: 12 <br>Speed: 2.9046814159292 <br>HR: 177.964601769911 <br>Cadence: 80.9469026548673 <br>Altitude: 18.8495575221239","Mile: 13 <br>Speed: 2.99240178571429 <br>HR: 178.732142857143 <br>Cadence: 82.5803571428571 <br>Altitude: 12.6339285714286","Mile: 14 <br>Speed: 2.53381690140845 <br>HR: 176.633802816901 <br>Cadence: 82.3943661971831 <br>Altitude: 32.8197183098592","Mile: 15 <br>Speed: 1.48210550458716 <br>HR: 139.56880733945 <br>Cadence: 79.0596330275229 <br>Altitude: 24.3201834862385","Mile: 17 <br>Speed: 2.78109322033898 <br>HR: 171.686440677966 <br>Cadence: 82.7966101694915 <br>Altitude: 42.0186440677966","Mile: 18 <br>Speed: 2.52275384615385 <br>HR: 150.307692307692 <br>Cadence: 72.3923076923077 <br>Altitude: 23.2507692307692","Mile: 19 <br>Speed: 2.35978125 <br>HR: 145.89375 <br>Cadence: 71.54375 <br>Altitude: 24.7425","Mile: 2 <br>Speed: 3.1041376146789 <br>HR: 173 <br>Cadence: 80.8623853211009 <br>Altitude: 28.9633027522936","Mile: 20 <br>Speed: 2.65359712230216 <br>HR: 160.647482014388 <br>Cadence: 81.4244604316547 <br>Altitude: 13.6474820143885","Mile: 21 <br>Speed: 2.79764885496183 <br>HR: 159.206106870229 <br>Cadence: 81.8015267175573 <br>Altitude: 27.1435114503817","Mile: 22 <br>Speed: 2.59456390977444 <br>HR: 167.353383458647 <br>Cadence: 80.4586466165414 <br>Altitude: 46.0736842105263","Mile: 23 <br>Speed: 2.48124812030075 <br>HR: 172.233082706767 <br>Cadence: 76.6842105263158 <br>Altitude: 73.8285714285714","Mile: 24 <br>Speed: 2.42738686131387 <br>HR: 173.737226277372 <br>Cadence: 71.2116788321168 <br>Altitude: 26.043795620438","Mile: 25 <br>Speed: 2.64834161490683 <br>HR: 176.484472049689 <br>Cadence: 80.0683229813665 <br>Altitude: 7.53540372670807","Mile: 26-Finish <br>Speed: 3.0642037037037 <br>HR: 183.296296296296 <br>Cadence: 86.1481481481482 <br>Altitude: 19.3185185185185","Mile: 3 <br>Speed: NA <br>HR: 174.938053097345 <br>Cadence: 80.4070796460177 <br>Altitude: 33.7256637168142","Mile: 4 <br>Speed: 3.1024953271028 <br>HR: 175.383177570093 <br>Cadence: 80.4485981308411 <br>Altitude: 27.985046728972","Mile: 5 <br>Speed: 3.03915789473684 <br>HR: 172.69298245614 <br>Cadence: 81.3245614035088 <br>Altitude: 14.8368421052632","Mile: 6 <br>Speed: 3.06128070175439 <br>HR: 175.333333333333 <br>Cadence: 81.780701754386 <br>Altitude: 26.0666666666667","Mile: 7 <br>Speed: 2.97276470588235 <br>HR: 175.352941176471 <br>Cadence: 79.4705882352941 <br>Altitude: 22.6436974789916","Mile: 8 <br>Speed: 3.05102479338843 <br>HR: 177.280991735537 <br>Cadence: 81.7851239669422 <br>Altitude: 42.1074380165289","Mile: 9 <br>Speed: 3.02143965517241 <br>HR: 177.534482758621 <br>Cadence: 82.5948275862069 <br>Altitude: 37.3586206896552","Mile: Start <br>Speed: 2.9199435483871 <br>HR: 168.548387096774 <br>Cadence: 80.9112903225806 <br>Altitude: 68.2774193548387"],null,["1","10","11","12","13","14","15","17","18","19","2","20","21","22","23","24","25","26-Finish","3","4","5","6","7","8","9","Start"],{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addProviderTiles","args":["CartoDB.Positron",null,null,{"errorTileUrl":"","noWrap":false,"detectRetina":false}]}],"limits":{"lat":[40.6043989839213,40.8118997489457],"lng":[-74.0517789316213,-73.928230043045]}},"evals":[],"jsHooks":[]}</script>
->>>>>>> 0f8afd0c03bcac648c7158c41d5cd5b70ae843e2
+<div id="htmlwidget-269d094fed545a895627" style="width:672px;height:480px;" class="leaflet html-widget"></div>
+<script type="application/json" data-for="htmlwidget-269d094fed545a895627">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"https://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addCircleMarkers","args":[[40.6104348705628,40.7042159239592,40.7164656348145,40.728277819874,40.740826228118,40.7491534880795,40.7558571904419,40.7777123779879,40.7903228550433,40.8023561141454,40.6192627834549,40.8118997489457,40.8102504578455,40.8001325806757,40.7882020822061,40.7763461387941,40.766959590201,40.770384692587,null,40.6444014760309,40.6557787290627,40.6671305434582,40.6794894834151,40.6876716191673,40.6921380146503,40.6043989839213],[-74.0346232919979,-73.9608535200188,-73.9589246148317,-73.9524508345938,-73.9525773309703,-73.9450712946021,-73.9528505667326,-73.9487948260759,-73.939629788009,-73.9298666665563,-74.0288426203294,-73.928230043045,-73.9394263029525,-73.9473303446644,-73.9557053759358,-73.966941702771,-73.9756988926056,-73.9788563751305,null,-74.0148388704929,-74.0029969833497,-73.9916699058621,-73.9818277620092,-73.9710569978992,-73.9571167532644,-74.0517789316213],7,null,null,{"interactive":true,"className":"","stroke":true,"color":"orange","weight":5,"opacity":0.5,"fill":true,"fillColor":"orange","fillOpacity":0.75},null,null,["Mile: 1 <br>Speed: 7.16634034234234 <br>HR: 169.648648648649 <br>Cadence: 79.945945945946 <br>Altitude: 55.3783783783784","Mile: 10 <br>Speed: 5.91045904545455 <br>HR: 173.840909090909 <br>Cadence: 78.7045454545455 <br>Altitude: 33.7590909090909","Mile: 11 <br>Speed: 6.16624646456693 <br>HR: 177.094488188976 <br>Cadence: 82.5984251968504 <br>Altitude: 16.0708661417323","Mile: 12 <br>Speed: 6.49777232743363 <br>HR: 177.964601769911 <br>Cadence: 80.9469026548673 <br>Altitude: 18.8495575221239","Mile: 13 <br>Speed: 6.69400279464286 <br>HR: 178.732142857143 <br>Cadence: 82.5803571428571 <br>Altitude: 12.6339285714286","Mile: 14 <br>Speed: 5.6681484084507 <br>HR: 176.633802816901 <br>Cadence: 82.3943661971831 <br>Altitude: 32.8197183098592","Mile: 15 <br>Speed: 3.31547001376147 <br>HR: 139.56880733945 <br>Cadence: 79.0596330275229 <br>Altitude: 24.3201834862385","Mile: 17 <br>Speed: 6.22130553389831 <br>HR: 171.686440677966 <br>Cadence: 82.7966101694915 <br>Altitude: 42.0186440677966","Mile: 18 <br>Speed: 5.64340035384615 <br>HR: 150.307692307692 <br>Cadence: 72.3923076923077 <br>Altitude: 23.2507692307692","Mile: 19 <br>Speed: 5.27883065625 <br>HR: 145.89375 <br>Cadence: 71.54375 <br>Altitude: 24.7425","Mile: 2 <br>Speed: 6.9439558440367 <br>HR: 173 <br>Cadence: 80.8623853211009 <br>Altitude: 28.9633027522936","Mile: 20 <br>Speed: 5.93609676258993 <br>HR: 160.647482014388 <br>Cadence: 81.4244604316547 <br>Altitude: 13.6474820143885","Mile: 21 <br>Speed: 6.25834048854962 <br>HR: 159.206106870229 <br>Cadence: 81.8015267175573 <br>Altitude: 27.1435114503817","Mile: 22 <br>Speed: 5.80403946616541 <br>HR: 167.353383458647 <br>Cadence: 80.4586466165414 <br>Altitude: 46.0736842105263","Mile: 23 <br>Speed: 5.55055204511278 <br>HR: 172.233082706767 <br>Cadence: 76.6842105263158 <br>Altitude: 73.8285714285714","Mile: 24 <br>Speed: 5.43006440875912 <br>HR: 173.737226277372 <br>Cadence: 71.2116788321168 <br>Altitude: 26.043795620438","Mile: 25 <br>Speed: 5.92434019254658 <br>HR: 176.484472049689 <br>Cadence: 80.0683229813665 <br>Altitude: 7.53540372670807","Mile: 26-Finish <br>Speed: 6.85462368518519 <br>HR: 183.296296296296 <br>Cadence: 86.1481481481482 <br>Altitude: 19.3185185185185","Mile: 3 <br>Speed: NA <br>HR: 174.938053097345 <br>Cadence: 80.4070796460177 <br>Altitude: 33.7256637168142","Mile: 4 <br>Speed: 6.94028204672897 <br>HR: 175.383177570093 <br>Cadence: 80.4485981308411 <br>Altitude: 27.985046728972","Mile: 5 <br>Speed: 6.79859621052632 <br>HR: 172.69298245614 <br>Cadence: 81.3245614035088 <br>Altitude: 14.8368421052632","Mile: 6 <br>Speed: 6.84808492982456 <br>HR: 175.333333333333 <br>Cadence: 81.780701754386 <br>Altitude: 26.0666666666667","Mile: 7 <br>Speed: 6.65007464705882 <br>HR: 175.352941176471 <br>Cadence: 79.4705882352941 <br>Altitude: 22.6436974789916","Mile: 8 <br>Speed: 6.82514246280992 <br>HR: 177.280991735537 <br>Cadence: 81.7851239669422 <br>Altitude: 42.1074380165289","Mile: 9 <br>Speed: 6.75896050862069 <br>HR: 177.534482758621 <br>Cadence: 82.5948275862069 <br>Altitude: 37.3586206896552","Mile: Start <br>Speed: 6.53191371774194 <br>HR: 168.548387096774 <br>Cadence: 80.9112903225806 <br>Altitude: 68.2774193548387"],null,["1","10","11","12","13","14","15","17","18","19","2","20","21","22","23","24","25","26-Finish","3","4","5","6","7","8","9","Start"],{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addProviderTiles","args":["CartoDB.Positron",null,null,{"errorTileUrl":"","noWrap":false,"detectRetina":false}]}],"limits":{"lat":[40.6043989839213,40.8118997489457],"lng":[-74.0517789316213,-73.928230043045]}},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 
