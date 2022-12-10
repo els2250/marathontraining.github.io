@@ -4,7 +4,7 @@ navbar:
   title: "Home"
   right:
     - text: "Final Report"
-      href: final_report.html
+      href: backup.html
     - text: "Interactive Map"
       href: descriptive_stats.html
     - text: "Data Visualization"
