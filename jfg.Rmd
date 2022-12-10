@@ -23,7 +23,7 @@ knitr::include_graphics(c("images/emma+mom_cheers.JPG", "images/emma+mom_cheers2
 
 <center>
 
-![](images/bald_selfie.jpg){width=25%}
+![](images/bald_selfie.jpg){width=35%}
 
 Emma embracing a beautiful October morning with an 18-miler
 

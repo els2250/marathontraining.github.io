@@ -582,7 +582,7 @@ and 27.89 degrees Celsius, Emma’s relative effort averaged around
 <h3>Performance vs. Humidity</h3>
 <pre class="r"><code>humid_avg_speed = 
   tidy_training %&gt;% 
-  ggplot(aes(x = humidity, y = average_speed)) + 
+  ggplot(aes(x = humidity*100, y = average_speed)) + 
   geom_point(color = c(&quot;#FFA500&quot;)) +
   geom_smooth(se = FALSE, color = &quot;dark grey&quot;) + 
     labs(
@@ -599,7 +599,7 @@ and 27.89 degrees Celsius, Emma’s relative effort averaged around
 
 humid_avg_hrt = 
   tidy_training %&gt;% 
-  ggplot(aes(x = humidity, y = average_heart_rate)) + 
+  ggplot(aes(x = humidity*100, y = average_heart_rate)) + 
   geom_point(color = c(&quot;#FFA500&quot;)) +
   geom_smooth(se = FALSE, color = &quot;dark grey&quot;) + 
     labs(
@@ -616,7 +616,7 @@ humid_avg_hrt =
 
 humid_rel_effort = 
   tidy_training %&gt;% 
-  ggplot(aes(x = humidity, y = relative_effort)) + 
+  ggplot(aes(x = humidity*100, y = relative_effort)) + 
   geom_point(color = c(&quot;#FFA500&quot;)) +
   geom_smooth(se = FALSE, color = &quot;dark grey&quot;) + 
     labs(

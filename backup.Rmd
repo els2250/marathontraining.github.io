@@ -261,7 +261,7 @@ Finally, we also hypothesized that external temperature would be directly relate
 ```{r, warning = FALSE, message = FALSE, error = FALSE}
 humid_avg_speed = 
   tidy_training %>% 
-  ggplot(aes(x = humidity, y = average_speed)) + 
+  ggplot(aes(x = humidity*100, y = average_speed)) + 
   geom_point(color = c("#FFA500")) +
   geom_smooth(se = FALSE, color = "dark grey") + 
     labs(
@@ -278,7 +278,7 @@ humid_avg_speed =
 
 humid_avg_hrt = 
   tidy_training %>% 
-  ggplot(aes(x = humidity, y = average_heart_rate)) + 
+  ggplot(aes(x = humidity*100, y = average_heart_rate)) + 
   geom_point(color = c("#FFA500")) +
   geom_smooth(se = FALSE, color = "dark grey") + 
     labs(
@@ -295,7 +295,7 @@ humid_avg_hrt =
 
 humid_rel_effort = 
   tidy_training %>% 
-  ggplot(aes(x = humidity, y = relative_effort)) + 
+  ggplot(aes(x = humidity*100, y = relative_effort)) + 
   geom_point(color = c("#FFA500")) +
   geom_smooth(se = FALSE, color = "dark grey") + 
     labs(
