@@ -87,7 +87,7 @@ Due to Emma's marathon training beginning March 31st, 2022, the 'activity_id' wa
 
 A new data frame, 'activities_summaries' was created in order to include the written accounts from each of Emma's runs, including variables 'activity_name' and 'activity_description'.
 
-The final cleaned data set, 'tidy_training', included 110 observations and 21 variables. Variables included were:activity_id, date, time, distance_km, elapsed_time_min, max_speed, average_speed, max_heart_rate, average_heart_rate, relative_effort, elevation_gain, elevation_loss, max_grade, average_grade, max_cadence, averag_cadence, calories, weather_temperature, dewpoint, humidity, and wind_speed. 
+The final cleaned data set, 'tidy_training', included 110 observations and 21 variables. Variables included were:activity_id, date, time, distance_km, elapsed_time_min, max_speed, average_speed, max_heart_rate, average_heart_rate, relative_effort, elevation_gain, elevation_loss, max_grade, average_grade, max_cadence, average_cadence, calories, weather_temperature, dewpoint, humidity, and wind_speed. 
 
 #### Exploratory Analysis: Visualizations, summaries, and exploratory statistical analyses. Justify the steps you took, and show any major changes to your ideas.
 
