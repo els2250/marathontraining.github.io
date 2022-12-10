@@ -514,26 +514,36 @@ cv_df %&gt;%
                               &quot;mod4&quot; = &quot;Elevation, Wind, \n Interactions&quot;,
                               &quot;mod5&quot; = &quot;Temperature, Dewpoint, \n Interactions&quot;))</code></pre>
 <p><img src="models_speed_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
-<pre class="r"><code>summary(fit1) </code></pre>
-<pre><code>## 
-## Call:
-## lm(formula = average_speed ~ weather_temperature, data = tidy_training)
-## 
-## Residuals:
-##      Min       1Q   Median       3Q      Max 
-## -1.67575 -0.04426  0.02527  0.08812  0.52378 
-## 
-## Coefficients:
-##                     Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept)         2.828694   0.098756  28.643   &lt;2e-16 ***
-## weather_temperature 0.010893   0.004964   2.194    0.031 *  
-## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
-## 
-## Residual standard error: 0.2448 on 83 degrees of freedom
-##   (23 observations deleted due to missingness)
-## Multiple R-squared:  0.05483,    Adjusted R-squared:  0.04344 
-## F-statistic: 4.815 on 1 and 83 DF,  p-value: 0.03101</code></pre>
+<pre class="r"><code>summary(fit1) %&gt;% 
+  broom::tidy() %&gt;% 
+  filter(term == &quot;weather_temperature&quot;) %&gt;% 
+  mutate(
+    lower_ci = exp(estimate - 1.96*std.error),
+    upper_ci = exp(estimate + 1.96*std.error)
+  ) %&gt;% 
+  select(term, estimate, lower_ci, upper_ci, p.value) %&gt;% 
+  knitr::kable(digits = 3, 
+               col.names = c(&quot;Term&quot;, &quot;Estimate&quot;, &quot;Lower CI&quot;, &quot;Upper CI&quot;, &quot;P-value&quot;))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="right">Estimate</th>
+<th align="right">Lower CI</th>
+<th align="right">Upper CI</th>
+<th align="right">P-value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">weather_temperature</td>
+<td align="right">0.011</td>
+<td align="right">1.001</td>
+<td align="right">1.021</td>
+<td align="right">0.031</td>
+</tr>
+</tbody>
+</table>
 <p>Based on the distributions depicted above, we can conclude that the
 model with temperature is able to generate better predictions than the
 other models with environmental factors. The p-value for this model is

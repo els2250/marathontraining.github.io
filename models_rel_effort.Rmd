@@ -115,7 +115,16 @@ cv_df %>%
                               "mod4" = "Elevation, Wind, \n Interactions",
                               "mod5" = "Temperature, Dewpoint, \n Humidity, Interactions"))
 
-summary(fit4)
+summary(fit4) %>%
+  broom::tidy() %>%
+  filter(term != "(Intercept)") %>%
+  mutate(
+    lower_ci = exp(estimate - 1.96*std.error),
+    upper_ci = exp(estimate + 1.96*std.error)
+  ) %>%
+  select(term, estimate, lower_ci, upper_ci, p.value) %>%
+  knitr::kable(digits = 3,
+               col.names = c("Term", "Estimate", "Lower CI", "Upper CI", "P-value"))
 ```
 
 Based on the distributions depicted above, we can conclude that the model with elevation, wind, and interactions is able to generate better predictions than the other models with environmental factors. The p-value for this model is < 2.2 e-16. As it is below the significance level, we can conclude that this model is a good predictor for average speed. 
