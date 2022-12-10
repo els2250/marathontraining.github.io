@@ -165,7 +165,7 @@ tidy_training %>%
         plot.title = element_text(hjust = 0.5))
 ```
 
-Emma's mileage overtime gradually increased throughout her training period, peaking at Week 20 where she ran 70.28 km over the course of the week. Weeks 21-25 demonstrate a steep drop in weekly mileage. This was due to XXX. The plot above demonstrates Emma's ramp up in training mileage in preparation for the NYCM.
+Emma's mileage overtime gradually increased throughout her training period, peaking at Week 20 where she ran 70.28 km over the course of the week. Weeks 21-25 demonstrate a steep drop in weekly mileage. This was due to Emma's illnesses and injuries, making her unable to run. The plot above demonstrates Emma's ramp up in training mileage in preparation for the NYCM.
 
 ### Mileage Density Plot
 
