@@ -362,3 +362,5 @@ leaflet() %>%
                              "<br>Cadence:", cadence,
                             "<br>Altitude:", enhanced_altitude)) %>% 
   addProviderTiles(providers$CartoDB.Positron)
+```
+
