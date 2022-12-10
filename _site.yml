@@ -19,6 +19,6 @@ navbar:
       href: https://www.strava.com/
 output:
   html_document:
-    theme: cosmo
+    theme: united
     
     

@@ -24,33 +24,53 @@ Upon receiving Emma's data from Strava.com, we noticed that the data was clean a
 
 #### Initial Questions: What questions are you trying to answer? How did these questions evolve over the course of the project? What new questions did you consider in the course of your analysis?
 
+For the purposes of this project, we will be answering the following questions:
 
+1. What does Emma's training schedule look like with respect to environmental factors such as temperature, humidity, elevation, etc.?
+2. What are Emma's optimal training conditions?
+3. What are Emma's most comfortable training distances?
+4. How do environmental factors affect Emma's performance? Are these factors good predictors for her performance? 
 
 <br/>  
 
 #### Data: Source, scraping method, cleaning, etc.
 
-Data was collected using the Garmin Forerunner 245 activity watch from July 23, 2020 to November 6, 2022. Collected data was uploaded to Strava.com after each activity. After granting permission, personal data was downloaded from Strava.com. Summary data for each activity post was saved in the form of a `.csv` file (imported using `tidyverse`) and per-second data for each activity was compiled and saved in a `.fit` file (imported using `FITfileR`). 
+In preparation for data analysis, we will load the following libraries: 
 
-##### *Importing Data*
-
-First, we imported the summary data of all of Emma's training runs from July 23, 2020 to November 6, 2022. In order to clean this data, we:
-
-1. Sorted data to include only information from the time that Emma started training for the NYCM, which was on April 4, 2022
-2. Selected the necessary variables
-
-```{r, load packages}
+```{r, load packages, warning = FALSE, message = FALSE, error = FALSE}
 library(tidyverse)
 library(FITfileR)
 library(dplyr)
 library(patchwork)
 library(leaflet)
+library(modelr)
 ```
 
+Data was collected using the Garmin Forerunner 245 activity watch from July 23, 2020 to November 6, 2022. Collected data was uploaded to Strava.com after each activity. After granting permission, personal data was downloaded from Strava.com. Summary data for each activity post was saved in the form of a `.csv` file (imported using `tidyverse`) and per-second data for each activity was compiled and saved in a `.fit` file (imported using `FITfileR`). 
+
+##### *Importing & Describing Raw Data*
+
+First, we imported the summary-level data of all of Emma's training runs from July 23, 2020 to November 6, 2022 using the `read_csv` function.  
 
 ```{r}
-training_summary <- read_csv("activities/activities.csv") %>% 
-  janitor::clean_names() %>%
+training_raw <- read_csv("activities/activities.csv") %>% 
+  janitor::clean_names()
+
+skimr::skim(training_raw)
+```
+The raw data contains blah blah
+
+##### *Data Cleaning*
+
+After importing, the data frame was then cleaned to include activities from the start of marathon training (April 4, 2022) to the day of the New York City Marathon (November 6, 2022). The data was filtered to only include observations from 'activity_type' that were classified as 'Run'. From this, the following 22 variables were selected to be included in this data set: activity_id, activity_date, activity_name, activity_description, elapsed_time_6, distance_7, max_heart_rate_8, relative_effort_9, max_speed, average_speed, elevation_gain, elevation_loss, max_grade, average_grade, max_cadence, average_cadence, average_heart_rate, calories, weather_temperature, dewpoint, humidity,and wind_speed. 
+
+Due to Emma's marathon training beginning April 4th, 2022, the 'activity_id' was used in order to filter any training prior to this. Following this, the variable 'activity_date' was separated into two variables:the date on which the run occurred ('date') as well as the time when the run began ('time'). The 'elapsed_time_6' variable was converted from seconds to minutes ('elapsed_time_min'). In addition to this, the variables names for distance_7, max_heart_rate_8, and relative_effort_9 were changed to distance_km, max_heart_rate, and relative_effort.
+
+A new data frame, 'activities_summaries' was created in order to include the written accounts from each of Emma's runs, including variables 'activity_name' and 'activity_description'.
+
+```{r}
+training_summary = 
+  training_raw %>% 
   filter(activity_type == "Run") %>%
   select(activity_id, activity_date, activity_name, activity_description, elapsed_time_6, distance_7, max_heart_rate_8, relative_effort_9, max_speed, average_speed, elevation_gain, elevation_loss, max_grade, average_grade, max_cadence, average_cadence, average_heart_rate, calories, weather_temperature, dewpoint, humidity, wind_speed) %>%
   filter(activity_id >= 6910869137) %>%
@@ -78,16 +98,17 @@ tidy_training =
          date != "2022-04-03")
 ```
 
-Since each Garmin activity was downloaded as an individual FIT file, a function was created to iterate across the multiple activities and compile a single data frame. As shown below, the function was created to read each activity FIT file into R and pull out the records (which included data on latitude and longitude, distance, speed, heart rate, and cadence), and then each second of activity was merged into a single data frame. This function was applied to a list of all file names. A `for` loop was used to generate a list of data frames, and then rows were merged using `bind_rows` to create the final data frame, `marathon_df`. 
+The final cleaned data set, 'tidy_training', included __`r tidy_training %>% nrow()` observations__ and __`r tidy_training %>% ncol()` variables__. The tidied dataset contains the following variables and associated characteristics:
 
-##### *Data Cleaning*
-After importing, the data frame was then cleaned to include activities from the start of marathon training (March 31, 2022) to the day of the New York City Marathon (November 6, 2022). Within the 'activities' data set, there were 335 observations and 84 variables. The data was filtered to only include observations from 'activity_type' that were classified as 'Run'. From this, 22 variables were selected to be included in this data set: activity_id, activity_date, activity_name, activity_description, elapsed_time_6, distance_7, max_heart_rate_8, relative_effort_9, max_speed, average_speed, elevation_gain, elevation_loss, max_grade, average_grade, max_cadence, average_cadence, average_heart_rate, calories, weather_temperature, dewpoint, humidity,and wind_speed. 
+* `activity_id`: Unique activity identifier
+* `date`: Date of activity (YYYY-MM-DD)
+* `time`: Time of activity
+* `distance_km`: Distance ran in km, mean = `r tidy_training %>% mean(distance_km, na.omit())`, range
+* `elapsed_time_min`: Time spent running in minutes, mean = `r tidy_training %>% mean(elapsed_time_min)`
+* `max_speed`: Maximum running pace minutes/km, mean = `r tidy_training %>% mean(max_speed)`
+* `average_speed`:
 
-Due to Emma's marathon training beginning March 31st, 2022, the 'activity_id' was used in order to filter any training prior to this. Following this, the variable 'activity_date' was separated into two variables:the date on which the run occurred ('date') as well as the time when the run began ('time'). The 'elapsed_time_6' variable was converted from seconds to minutes ('elapsed_time_min'). In addition to this, the variables names for distance_7, max_heart_rate_8, and relative_effort_9 were changed to distance_km, max_heart_rate, and relative_effort.
-
-A new data frame, 'activities_summaries' was created in order to include the written accounts from each of Emma's runs, including variables 'activity_name' and 'activity_description'.
-
-The final cleaned data set, 'tidy_training', included 110 observations and 21 variables. Variables included were:activity_id, date, time, distance_km, elapsed_time_min, max_speed, average_speed, max_heart_rate, average_heart_rate, relative_effort, elevation_gain, elevation_loss, max_grade, average_grade, max_cadence, average_cadence, calories, weather_temperature, dewpoint, humidity, and wind_speed. 
+Variables included were:activity_id, date, time, distance_km, elapsed_time_min, max_speed, average_speed, max_heart_rate, average_heart_rate, relative_effort, elevation_gain, elevation_loss, max_grade, average_grade, max_cadence, average_cadence, calories, weather_temperature, dewpoint, humidity, and wind_speed. 
 
 #### Exploratory Analysis: Visualizations, summaries, and exploratory statistical analyses. Justify the steps you took, and show any major changes to your ideas.
 
@@ -372,4 +393,56 @@ leaflet() %>%
                             "<br>Altitude:", enhanced_altitude)) %>% 
   addProviderTiles(providers$CartoDB.Positron)
 ```
+
+#### Exploratory Statistical Analysis
+
+#### Hypothesizing a Regression Model for Emma's Marathon Performance
+
+```{r}
+speed_temp = lm(average_speed ~ weather_temperature, data = tidy_training)
+
+speed_humidity = lm(average_speed ~ humidity, data = tidy_training)
+
+speed_temp_humidity_int = lm(average_speed ~ (weather_temperature + humidity)^3, data = tidy_training)
+```
+
+```{r}
+cv_df = 
+  crossv_mc(tidy_training, 100)
+
+cv_df = cv_df %>% 
+  mutate(
+    speed_temp_mod      = map(.x = train, ~lm(average_speed ~ weather_temperature, data = .x)), 
+    speed_humidity_mod   = map(.x = train, ~lm(average_speed ~ humidity, data = .x)), 
+    speed_temp_humidity_int_mod = map(.x = train, ~lm(average_speed ~ (weather_temperature + humidity)^3, data = .x))) %>% 
+  mutate(
+    rmse_speed_temp = map2_dbl(.x = speed_temp_mod, .y = test, ~rmse(model = .x, data = .y)), 
+    rmse_speed_humidity = map2_dbl(.x = speed_humidity_mod, .y = test, ~rmse(model = .x, data = .y)), 
+    rmse_speed_temp_humidity_int = map2_dbl(.x = speed_temp_humidity_int_mod, .y = test, ~rmse(model = .x, data = .y)))
+```
+
+```{r}
+cv_df %>% 
+  select(starts_with("rmse")) %>% 
+  pivot_longer(
+    everything(), 
+    names_to = "model", 
+    values_to = "rmse", 
+    names_prefix = "rmse_") %>% 
+  ggplot(aes(x = model, y = rmse, color = c("#FFA500"))) +
+  geom_boxplot() + 
+  labs(
+    title = "Root Mean Squared Errors Distributions for Emma's Average Speed", 
+    x = "Fitted Model", 
+    y = "RMSE")  + 
+  theme(axis.line = element_line(color = "grey"), 
+        panel.background = element_blank(), 
+        legend.position = "none", 
+        panel.grid.major = element_line(color = "light grey", linetype = "dashed"),
+        plot.title = element_text(hjust = 0.5)) + 
+  scale_x_discrete(labels = c("speed_humidity" = "Humidity Model", 
+                              "speed_temp" = "Temperature Model", 
+                              "speed_temp_humidity_int" = "Temperature, Humidity, Interaction Model"))
+```
+
 
