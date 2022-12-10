@@ -15,7 +15,7 @@ navbar:
       href: mailto:<gw2442@cumc.columbia.edu; els2250@cumc.columbia.edu; hw2852@cumc.columbia.edu; ma4197@cumc.columbia.edu>
     - icon: fa-github fa-lg
       href: https://github.com/els2250/marathontraining.github.io
-    - icon: fa-thin fa-person-running
+    - icon: fa-brands fa-person-running
       href: https://www.strava.com/
 output:
   html_document:
