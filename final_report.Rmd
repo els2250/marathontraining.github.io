@@ -165,6 +165,8 @@ tidy_training %>%
         plot.title = element_text(hjust = 0.5))
 ```
 
+Emma's mileage overtime gradually increased throughout her training period, peaking at Week 20 where she ran 70.28 km over the course of the week. Weeks 21-25 demonstrate a steep drop in weekly mileage. This was due to XXX. The plot above demonstrates Emma's ramp up in training mileage in preparation for the NYCM.
+
 ### Mileage Density Plot
 
 ```{r, warning = FALSE, message = FALSE, error = FALSE}
@@ -184,6 +186,7 @@ tidy_training %>%
         plot.title = element_text(hjust = 0.5))
 ```
 
+The density plot above illustrates the mileage at which Emma run's most often during her training period. The plot peaks at a distance of approximately 7km, indicating that 7km is the length of most of Emma's runs during heer training period.
 
 ### Choose Your Graph (Drop down list of Y and X)
 Temperature vs average speed/average heart rate/relative effort (all of these)
@@ -207,6 +210,8 @@ tidy_training %>%
         panel.grid.major = element_line(color = "light grey", linetype = "dashed"),
         plot.title = element_text(hjust = 0.5))
 ```
+
+Although we expected Emma's speed to be inversely proportional to the weather temperature, Emma's average speed stayed approximately steady throughout the training period, with a speed of 3 meters per second (10.8 km per hour), while temperature varied between 6.58 degrees Celsius and 27.89 degrees Celsius.
 
 #### Performance vs. Temperature
 
@@ -266,6 +271,12 @@ temp_avg_speed /
 (temp_avg_hrt | temp_rel_effort)
 ```
 
+Although we expected Emma's speed to be inversely proportional to the weather temperature, Emma's average speed stayed approximately steady throughout the training period, with a speed of 3 meters per second (10.8 km per hour), while temperature varied between 6.58 degrees Celsius and 27.89 degrees Celsius, as demonstrated in the top plot above. 
+
+Additionally, although we hypothesized that external temperature would be inversely related to Emma's average heart rate, the plot on the bottom left demonstrates the relationship between external temperature and Emma's average heart rate. While temperature varied between 6.58 degrees Celsius and 27.89 degrees Celsius, Emma's heart rate averaged around 155.
+
+Finally, although we hypothesized that external temperature would be inversely related to Emma's relative effort, the plot on the bottom right demonstrates the relationship between external temperature and Emma's relative effort during her training period. The variable relative effort is calculated by Strava and based off of her heart rate during the training session. The plot demonstrates that while temperature varied between 6.58 degrees Celsius and 27.89 degrees Celsius, Emma's relative effort averaged around 150.
+
 #### Performance vs. Humidity
 
 ```{r, warning = FALSE, message = FALSE, error = FALSE}
@@ -323,6 +334,12 @@ humid_rel_effort =
 humid_avg_speed /
 (humid_avg_hrt | humid_rel_effort)
 ```
+
+Although we expected Emma's speed to be inversely related to the external humidity, Emma's average speed stayed approximately steady throughout the training period, with a speed of 3 meters per second (10.8 km per hour), while humidity varied between between 32% and 96%, as demonstrated in the top plot above. 
+
+Additionally, although we hypothesized that external humidity would be inversely related to Emma's average heart rate, the plot on the bottom left demonstrates the relationship between external humidity and Emma's average heart rate. While humidity varied between 32% and 96%, Emma's heart rate averaged around 155.
+
+Finally, although we hypothesized that external humidity would be inversely related to Emma's relatie effort, the plot on the bottom right demonstrates the relationship between external humidity and Emma's relative effort during her training period. The variable relative effort is calculated by Strava and based off of her heart rate during the training session. The plot demonstrates that while humidity varied between 32% and 96%, Emma's relative effort averaged around 150.
 
 #### Interactive Marathon Route Map
 NOTE: Install Leaflet Prior to Running
@@ -412,6 +429,8 @@ leaflet() %>%
                             "<br>Altitude:", enhanced_altitude)) %>% 
   addProviderTiles(providers$CartoDB.Positron)
 ```
+
+The leaflet plot above demonstrates Emma's NYCM racing path. Each marker indicates the mile number and average speed (meters/sec), heart rate, cadence, and altitude for that mile. As a note, Strava failed to record information for Mile 3, and is therefore not included in the leaflet above. 
 
 ## Additional Analysis
 
