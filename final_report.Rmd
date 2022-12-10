@@ -3,18 +3,19 @@ title: "Final Report"
 output: 
   html_document:
     toc: true
+    code_folding: hide
     toc_float: true
 ---
 
 <br/>  
 
-#### Motivation: Provide an overview of the project goals and motivation.
+## Motivation
 
-Running a marathon requires an immense amount of time, effort, and dedication. First-time marathon runners are forced to make decisions with little knowledge of what to expect. Being ill-prepared and over-training are two common experiences that occur during training and on race day. Emma, one of our group members, ran the New York City Marathon (NYCM) this past fall, which was her first marathon. After completing the marathon on November 6th, Emma was prepared to start training for the next one. Therefore, we are interested in understanding the impact of external factors, such as temperature, wind, elevation, etc., on Emma's speed and performance during the marathon, while also considering how training changed over time in order to improve her training for next marathon.
+Running a marathon requires an immense amount of time, effort, and dedication. First-time marathon runners are forced to make decisions with little knowledge of what to expect. Being ill-prepared and over-training are two common experiences that occur during training and on race day. Emma, one of our group members, ran the New York City Marathon (NYCM) this past fall, which was her first marathon. After completing the marathon on November 6th, Emma was prepared to start training for the next one. Therefore, we are interested in understanding the impact of external factors, such as temperature, wind, elevation, etc., on Emma's speed and performance during the marathon, while also considering how training changed over time in order to improve her training for the next marathon.
 
 <br/>  
 
-#### Related Work: Anything that inspired you, such as a paper, a web site, or something we discussed in class.
+## Related Work
 
 This year, the NYCM was considered the hottest marathon since 1986. With temperatures in the mid-70s for most of the race, participants were encouraged to focus on hydrating and maintaining electrolytes in order to maintain their speed and finish the race. Most runners - beginners and experts alike - were struggling with the heat during race day, causing adverse health outcomes and decreased performance ([Runner's World Article](https://www.runnersworld.com/news/a41956910/strava-data-2022-nyc-marathon/)). Emma's experiences before and during the race inspired us to investigate her marathon training data. During the marathon, Emma felt the effects of the heat on her performance, and watched numerous people collapse mid-race. Emma also had her own battles with training prior to the marathon most likely due to over-training.
 
@@ -22,7 +23,7 @@ Upon receiving Emma's data from Strava.com, we noticed that the data was clean a
 
 <br/>
 
-#### Initial Questions: What questions are you trying to answer? How did these questions evolve over the course of the project? What new questions did you consider in the course of your analysis?
+## Initial Questions
 
 For the purposes of this project, we will be answering the following questions:
 
@@ -33,11 +34,11 @@ For the purposes of this project, we will be answering the following questions:
 
 <br/>  
 
-#### Data: Source, scraping method, cleaning, etc.
+## Data
 
 In preparation for data analysis, we will load the following libraries: 
 
-```{r, load packages, warning = FALSE, message = FALSE, error = FALSE}
+```{r, load packages, warning = FALSE, message = FALSE}
 library(tidyverse)
 library(FITfileR)
 library(dplyr)
@@ -48,19 +49,23 @@ library(modelr)
 
 Data was collected using the Garmin Forerunner 245 activity watch from July 23, 2020 to November 6, 2022. Collected data was uploaded to Strava.com after each activity. After granting permission, personal data was downloaded from Strava.com. Summary data for each activity post was saved in the form of a `.csv` file (imported using `tidyverse`) and per-second data for each activity was compiled and saved in a `.fit` file (imported using `FITfileR`). 
 
-##### *Importing & Describing Raw Data*
+### *Importing & Describing Raw Data*
 
 First, we imported the summary-level data of all of Emma's training runs from July 23, 2020 to November 6, 2022 using the `read_csv` function.  
 
-```{r}
+```{r, warning = FALSE, message = FALSE}
 training_raw <- read_csv("activities/activities.csv") %>% 
   janitor::clean_names()
+```
 
+```{r, warning = FALSE, message = FALSE, include = FALSE}
 skimr::skim(training_raw)
 ```
+
+
 The raw data contains blah blah
 
-##### *Data Cleaning*
+### *Data Cleaning*
 
 After importing, the data frame was then cleaned to include activities from the start of marathon training (April 4, 2022) to the day of the New York City Marathon (November 6, 2022). The data was filtered to only include observations from 'activity_type' that were classified as 'Run'. From this, the following 22 variables were selected to be included in this data set: activity_id, activity_date, activity_name, activity_description, elapsed_time_6, distance_7, max_heart_rate_8, relative_effort_9, max_speed, average_speed, elevation_gain, elevation_loss, max_grade, average_grade, max_cadence, average_cadence, average_heart_rate, calories, weather_temperature, dewpoint, humidity,and wind_speed. 
 
@@ -68,7 +73,7 @@ Due to Emma's marathon training beginning April 4th, 2022, the 'activity_id' was
 
 A new data frame, 'activities_summaries' was created in order to include the written accounts from each of Emma's runs, including variables 'activity_name' and 'activity_description'.
 
-```{r}
+```{r, warning = FALSE, message = FALSE}
 training_summary = 
   training_raw %>% 
   filter(activity_type == "Run") %>%
@@ -90,6 +95,7 @@ training_summary =
 activity_summaries =
   training_summary %>%
   select(activity_id, date, time, activity_name, activity_description)
+
 tidy_training = 
   training_summary %>%
   select(-activity_name, -activity_description) %>%
@@ -107,10 +113,23 @@ The final cleaned data set, 'tidy_training', included __`r tidy_training %>% nro
 * `elapsed_time_min`: Time spent running in minutes, mean = `r tidy_training %>% mean(elapsed_time_min)`
 * `max_speed`: Maximum running pace minutes/km, mean = `r tidy_training %>% mean(max_speed)`
 * `average_speed`:
+* `max_heart_rate`:
+* `average_heart_rate`:
+* `relative_effort`:
+* `elevation_gain`:
+* `elevation_loss`: 
+* `max_grade`:
+* `average_grade`:
+* `max_cadence`:
+* `average_cadence`:
+* `calories`:
+* `weather_temperature`:
+* `dewpoint`:
+* `humidity`:
+* `wind_speed`:
 
-Variables included were:activity_id, date, time, distance_km, elapsed_time_min, max_speed, average_speed, max_heart_rate, average_heart_rate, relative_effort, elevation_gain, elevation_loss, max_grade, average_grade, max_cadence, average_cadence, calories, weather_temperature, dewpoint, humidity, and wind_speed. 
 
-#### Exploratory Analysis: Visualizations, summaries, and exploratory statistical analyses. Justify the steps you took, and show any major changes to your ideas.
+## Exploratory Analysis
 
 * Mileage over time (Intro) - Individual monthly or weekly mileage
 * Rounded mileage to closest mile, density plot of how many times you ran a certain mileage or violin 
@@ -121,9 +140,9 @@ Variables included were:activity_id, date, time, distance_km, elapsed_time_min, 
 
 Side note: Rest days are not in strava data - create data set with all dates. we make a variable that is yes/no for rest days.
 
-#### Mileage over time
+### Mileage Over Time
 
-```{r}
+```{r, warning = FALSE, message = FALSE, error = FALSE}
 tidy_training = tidy_training %>% 
   mutate(week = as.numeric(strftime(date, format = "%V")) - 13) %>% 
   group_by(week) %>%
@@ -146,9 +165,9 @@ tidy_training %>%
         plot.title = element_text(hjust = 0.5))
 ```
 
-#### Mileage Density Plot
+### Mileage Density Plot
 
-```{r}
+```{r, warning = FALSE, message = FALSE, error = FALSE}
 tidy_training %>% 
   ggplot(aes(x = distance_km), color = c("#FFA500")) +
   geom_density(alpha = 0.5, fill = c("#FFA500")) + 
@@ -166,12 +185,12 @@ tidy_training %>%
 ```
 
 
-#### Choose Your Graph (Drop down list of Y and X)
+### Choose Your Graph (Drop down list of Y and X)
 Temperature vs average speed/average heart rate/relative effort (all of these)
 
-##### Temperature vs. Average Speed
+#### Temperature vs. Average Speed
 
-```{r}
+```{r, warning = FALSE, message = FALSE, error = FALSE}
 tidy_training %>% 
   ggplot(aes(x = weather_temperature, y = average_speed)) + 
   geom_point(color = c("#FFA500")) +
@@ -189,9 +208,9 @@ tidy_training %>%
         plot.title = element_text(hjust = 0.5))
 ```
 
-##### Temperature as a Predictor for Emma's Performance
+#### Performance vs. Temperature
 
-```{r}
+```{r, warning = FALSE, message = FALSE, error = FALSE}
 temp_avg_speed = 
   tidy_training %>% 
   ggplot(aes(x = weather_temperature, y = average_speed)) + 
@@ -247,9 +266,9 @@ temp_avg_speed /
 (temp_avg_hrt | temp_rel_effort)
 ```
 
-##### Humidity as a Predictor for Emma's Performance
+#### Performance vs. Humidity
 
-```{r}
+```{r, warning = FALSE, message = FALSE, error = FALSE}
 humid_avg_speed = 
   tidy_training %>% 
   ggplot(aes(x = humidity, y = average_speed)) + 
@@ -305,11 +324,11 @@ humid_avg_speed /
 (humid_avg_hrt | humid_rel_effort)
 ```
 
-*Map of Marathon Route with Averages*
+#### Interactive Marathon Route Map
 NOTE: Install Leaflet Prior to Running
 
 Loading and Cleaning the Data
-```{r}
+```{r, warning = FALSE, message = FALSE, error = FALSE}
 marathon_day <- read_csv("activities/marathon_day.csv")
 
 marathon_day =
@@ -349,7 +368,7 @@ mutate(group = case_when(
 
 Recode
 
-```{r}
+```{r, warning = FALSE, message = FALSE, error = FALSE}
 marathon_geo =
   marathon_day %>% 
   mutate(
@@ -358,7 +377,7 @@ marathon_geo =
   select(-position_lat, -position_long)
 ```
 
-```{r}
+```{r, warning = FALSE, message = FALSE, error = FALSE}
 marathon_speed =
 marathon_geo %>% 
   group_by(group) %>% 
@@ -368,7 +387,7 @@ marathon_geo %>%
 ```
 
 Aggregate Data
-```{r}
+```{r, warning = FALSE, message = FALSE, error = FALSE}
 agg = aggregate(marathon_speed,
                 by = list(marathon_geo$group),
                 FUN = mean)
@@ -376,7 +395,7 @@ agg = aggregate(marathon_speed,
 
 Aggregate Leaflet Plot
 
-```{r}
+```{r, warning = FALSE, message = FALSE, error = FALSE}
 leaflet() %>% 
   addTiles() %>% 
   addCircleMarkers(data = agg,
@@ -394,11 +413,11 @@ leaflet() %>%
   addProviderTiles(providers$CartoDB.Positron)
 ```
 
-#### Exploratory Statistical Analysis
+## Additional Analysis
 
-#### Hypothesizing a Regression Model for Emma's Marathon Performance
+### Performance Regression Models
 
-```{r}
+```{r, warning = FALSE, message = FALSE, error = FALSE}
 speed_temp = lm(average_speed ~ weather_temperature, data = tidy_training)
 
 speed_humidity = lm(average_speed ~ humidity, data = tidy_training)
@@ -406,7 +425,9 @@ speed_humidity = lm(average_speed ~ humidity, data = tidy_training)
 speed_temp_humidity_int = lm(average_speed ~ (weather_temperature + humidity)^3, data = tidy_training)
 ```
 
-```{r}
+### Cross-Validation
+
+```{r, warning = FALSE, message = FALSE, error = FALSE}
 cv_df = 
   crossv_mc(tidy_training, 100)
 
@@ -421,7 +442,7 @@ cv_df = cv_df %>%
     rmse_speed_temp_humidity_int = map2_dbl(.x = speed_temp_humidity_int_mod, .y = test, ~rmse(model = .x, data = .y)))
 ```
 
-```{r}
+```{r, warning = FALSE, message = FALSE, error = FALSE}
 cv_df %>% 
   select(starts_with("rmse")) %>% 
   pivot_longer(
@@ -445,4 +466,4 @@ cv_df %>%
                               "speed_temp_humidity_int" = "Temperature, Humidity, Interaction Model"))
 ```
 
-
+## Discussion
