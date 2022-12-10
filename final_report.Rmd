@@ -88,3 +88,117 @@ Due to Emma's marathon training beginning March 31st, 2022, the 'activity_id' wa
 A new data frame, 'activities_summaries' was created in order to include the written accounts from each of Emma's runs, including variables 'activity_name' and 'activity_description'.
 
 The final cleaned data set, 'tidy_training', included 110 observations and 21 variables. Variables included were:activity_id, date, time, distance_km, elapsed_time_min, max_speed, average_speed, max_heart_rate, average_heart_rate, relative_effort, elevation_gain, elevation_loss, max_grade, average_grade, max_cadence, averag_cadence, calories, weather_temperature, dewpoint, humidity, and wind_speed. 
+
+
+
+
+
+
+
+
+
+
+*Map of Marathon Route with Averages*
+NOTE: Install Leaflet Prior to Running
+
+Loading and Cleaning the Data
+```{r}
+marathon_day <- read_csv("activities/marathon_day.csv")
+
+marathon_day =
+marathon_day %>% 
+mutate(
+  distance_m = distance*0.000621371
+) %>% 
+mutate(group = case_when(
+    between(distance_m, 0,0.9999) ~ "Start",
+    between(distance_m, 1, 1.9999) ~ "1",
+    between(distance_m, 2, 2.9999) ~ "2",
+    between(distance_m, 3, 3.9999) ~ "3",
+    between(distance_m, 4, 4.9999) ~ "4",
+    between(distance_m, 5, 5.9999) ~ "5",
+    between(distance_m, 6, 6.9999) ~ "6",
+    between(distance_m, 7, 7.9999) ~ "7",
+    between(distance_m, 8, 8.9999) ~ "8",
+    between(distance_m, 9, 9.9999) ~ "9",
+    between(distance_m, 10, 10.9999) ~ "10",
+    between(distance_m, 11, 11.9999) ~ "11",
+    between(distance_m, 12, 12.9999) ~ "12",
+    between(distance_m, 13, 13.9999) ~ "13",
+    between(distance_m, 14, 14.9999) ~ "14",
+    between(distance_m, 15, 15.9999) ~ "15",
+    between(distance_m, 16, 2.9999) ~ "16",
+    between(distance_m, 17, 17.9999) ~ "17",
+    between(distance_m, 18, 18.9999) ~ "18",
+    between(distance_m, 19, 19.9999) ~ "19",
+    between(distance_m, 20, 20.9999) ~ "20",
+    between(distance_m, 21, 21.9999) ~ "21",
+    between(distance_m, 22, 22.9999) ~ "22",
+    between(distance_m, 23, 23.9999) ~ "23",
+    between(distance_m, 24, 24.9999) ~ "24",
+    between(distance_m, 25, 25.9999) ~ "25",
+    between(distance_m, 26, 26.9999) ~ "26-Finish")) 
+```
+
+Recode
+```{r}
+marathon_geo =
+  marathon_day %>% 
+  mutate(
+    latitude  = position_lat,
+    longitude = position_long) %>% 
+  select(-position_lat, -position_long)
+```
+
+```{r}
+marathon_speed =
+marathon_geo %>% 
+  group_by(group) %>% 
+  mutate(
+    speed = 
+  mean(enhanced_speed))
+```
+
+Aggregate Data
+```{r}
+agg = aggregate(marathon_geo,
+                by = list(marathon_geo$group),
+                FUN = mean)
+```
+
+Aggregate Leaflet Plot
+
+```{echo = FALSE, results='asis', warning=FALSE, message=FALSE}
+leaflet() %>% 
+  addTiles() %>% 
+  addCircleMarkers(data = agg,
+             lng = ~longitude,
+             lat = ~latitude,
+             label = ~Group.1,
+             radius = 7,
+             color = "orange",
+             stroke = TRUE, fillOpacity = 0.75,
+             popup = ~paste("Mile:", Group.1,
+                            "<br>Speed:", enhanced_speed,
+                            "<br>HR:", heart_rate,
+                             "<br>Cadence:", cadence,
+                            "<br>Altitude:", enhanced_altitude)) %>% 
+  addProviderTiles(providers$CartoDB.Positron)
+```
+
+```{r}
+leaflet() %>% 
+  addTiles() %>% 
+  addCircleMarkers(data = agg,
+             lng = ~longitude,
+             lat = ~latitude,
+             label = ~Group.1,
+             radius = 7,
+             color = "orange",
+             stroke = TRUE, fillOpacity = 0.75,
+             popup = ~paste("Mile:", Group.1,
+                            "<br>Speed:", enhanced_speed,
+                            "<br>HR:", heart_rate,
+                             "<br>Cadence:", cadence,
+                            "<br>Altitude:", enhanced_altitude)) %>% 
+  addProviderTiles(providers$CartoDB.Positron)
