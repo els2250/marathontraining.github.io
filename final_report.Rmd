@@ -62,16 +62,15 @@ training_raw <- read_csv("activities/activities.csv") %>%
 skimr::skim(training_raw)
 ```
 
+The raw data contains __`r training_raw %>% nrow()` observations__ and __`r training_raw %>% ncol()` variables__. Variables include data regarding activity date and type, trail/route information, equipment use, physical responses to training (heart rate, cadence, etc.), and weather. As is, these data were not tidy... Let's tidy!
 
-The raw data contains blah blah
+### Data Cleaning
 
-### *Data Cleaning*
+After importing, the data frame was then cleaned to include activities from the start of marathon training (April 4, 2022) to the day of the New York City Marathon (November 6, 2022). The data was filtered to only include observations from `activity_type` that were classified as 'Run'. We selected 22 relevant variables (summarized below). 
 
-After importing, the data frame was then cleaned to include activities from the start of marathon training (April 4, 2022) to the day of the New York City Marathon (November 6, 2022). The data was filtered to only include observations from 'activity_type' that were classified as 'Run'. From this, the following 22 variables were selected to be included in this data set: activity_id, activity_date, activity_name, activity_description, elapsed_time_6, distance_7, max_heart_rate_8, relative_effort_9, max_speed, average_speed, elevation_gain, elevation_loss, max_grade, average_grade, max_cadence, average_cadence, average_heart_rate, calories, weather_temperature, dewpoint, humidity,and wind_speed. 
+Due to Emma's marathon training beginning April 4th, 2022, the `activity_id` was used in order to filter any training prior to this. Following this, the variable `activity_date` was separated into two variables: the date on which the run occurred (`date`) as well as the time when the run began (`time`). The `elapsed_time_6` variable was converted from seconds to minutes (`elapsed_time_min`). In addition to this, the variables names for `distance_7`, `max_heart_rate_8`, and `relative_effort_9` were changed to `distance_km`, `max_heart_rate`, and `relative_effort.`
 
-Due to Emma's marathon training beginning April 4th, 2022, the 'activity_id' was used in order to filter any training prior to this. Following this, the variable 'activity_date' was separated into two variables:the date on which the run occurred ('date') as well as the time when the run began ('time'). The 'elapsed_time_6' variable was converted from seconds to minutes ('elapsed_time_min'). In addition to this, the variables names for distance_7, max_heart_rate_8, and relative_effort_9 were changed to distance_km, max_heart_rate, and relative_effort.
-
-A new data frame, 'activities_summaries' was created in order to include the written accounts from each of Emma's runs, including variables 'activity_name' and 'activity_description'.
+A new data frame, `activities_summaries` was created in order to include the written accounts from each of Emma's runs, including variables `activity_name` and `activity_description`.
 
 ```{r, warning = FALSE, message = FALSE}
 training_summary = 
@@ -109,24 +108,24 @@ The final cleaned data set, 'tidy_training', included __`r tidy_training %>% nro
 * `activity_id`: Unique activity identifier
 * `date`: Date of activity (YYYY-MM-DD)
 * `time`: Time of activity
-* `distance_km`: Distance ran in km, mean = `r tidy_training %>% mean(distance_km, na.omit())`, range
-* `elapsed_time_min`: Time spent running in minutes, mean = `r tidy_training %>% mean(elapsed_time_min)`
-* `max_speed`: Maximum running pace minutes/km, mean = `r tidy_training %>% mean(max_speed)`
-* `average_speed`:
-* `max_heart_rate`:
-* `average_heart_rate`:
-* `relative_effort`:
-* `elevation_gain`:
-* `elevation_loss`: 
-* `max_grade`:
-* `average_grade`:
-* `max_cadence`:
-* `average_cadence`:
-* `calories`:
-* `weather_temperature`:
-* `dewpoint`:
-* `humidity`:
-* `wind_speed`:
+* `distance_km`: Distance ran (km), mean = `r mean(tidy_training$distance_km)`, range
+* `elapsed_time_min`: Time spent running in minutes, mean = `r mean(tidy_training$elapsed_time_min)`
+* `max_speed`: Maximum running speed (meters/second), mean = `r mean(tidy_training$max_speed)`
+* `average_speed`: Average speed (meters/second) during the activity, mean = `r mean(tidy_training$average_speed)`
+* `max_heart_rate`: Maximum heart rate (beats per minute) during the activity, mean = `r mean(tidy_training$max_heart_rate)`
+* `average_heart_rate`: Average heart rate during the activity, mean = `r mean(tidy_training$average_heart_rate)`
+* `relative_effort`: Relative effort calculated using heart rate data, mean = `r mean(tidy_training$relative_effort)`
+* `elevation_gain`: Elevation gained during the activity, mean = `r mean(tidy_training$elevation_gain)`
+* `elevation_loss`: Elevation lost during the activity, mean = `r mean(tidy_training$elevation_loss)`
+* `max_grade`: Maximum grade during the activity, mean = `r mean(tidy_training$max_grade)`
+* `average_grade`: Average grade during the activity, mean = `r mean(tidy_training$average_grade)`
+* `max_cadence`: Maximum cadence (steps per minute) during the activity, mean = `r mean(tidy_training$max_cadence)`
+* `average_cadence`: Average cadence (steps per minute) during the activity, mean = `r mean(tidy_training$average_cadence)`
+* `calories`: Calories burned during the activity, mean = `r mean(tidy_training$calories)`
+* `weather_temperature`: Temperature (Celsius) during the activity, mean = `r mean(tidy_training$max_speed)`
+* `dewpoint`: Dew point during the activity, mean = `r mean(tidy_training$dewpoint)`
+* `humidity`: Humidity (%) during the activity, mean = `r mean(tidy_training$humidity)`
+* `wind_speed`: Wind speed in meters per second during the activity, mean = `r mean(tidy_training$wind_speed)`
 
 
 ## Exploratory Analysis
@@ -186,7 +185,7 @@ tidy_training %>%
         plot.title = element_text(hjust = 0.5))
 ```
 
-The density plot above illustrates the mileage at which Emma run's most often during her training period. The plot peaks at a distance of approximately 7km, indicating that 7km is the length of most of Emma's runs during heer training period.
+The density plot above illustrates the mileage at which Emma run's most often during her training period. The plot peaks at a distance of approximately 7km, indicating that 7km is the length of most of Emma's runs during her training period.
 
 ### Temperature vs. Average Speed
 
@@ -196,9 +195,9 @@ tidy_training %>%
   geom_point(color = c("#FFA500")) +
   geom_smooth(se = FALSE, color = "dark grey") + 
     labs(
-    title = "Temperature (C) vs. Emma's Average Speed",
+    title = "Temperature (C) vs. Emma's Average Speed (m/s)",
     x = "Temperature (C)", 
-    y = "Average Speed") + 
+    y = "Average Speed (m/s)") + 
   scale_x_continuous(breaks = scales::pretty_breaks(n = 5)) + 
   scale_y_continuous(breaks = scales::pretty_breaks(n = 5)) +
   theme(axis.line = element_line(color = "grey"), 
@@ -220,7 +219,7 @@ temp_avg_speed =
   geom_smooth(se = FALSE, color = "dark grey") + 
     labs(
     x = "Temperature (C)", 
-    y = "Average Speed") + 
+    y = "Average Speed (m/s)") + 
   scale_x_continuous(breaks = scales::pretty_breaks(n = 5)) + 
   scale_y_continuous(breaks = scales::pretty_breaks(n = 5)) +
   theme(axis.line = element_line(color = "grey"), 
@@ -228,7 +227,7 @@ temp_avg_speed =
         legend.position = "none", 
         panel.grid.major = element_line(color = "light grey", linetype = "dashed"),
         plot.title = element_text(hjust = 0.5)) + 
-  ggtitle("Temperature (C) vs. Emma's Average Speed")
+  ggtitle("Temperature (C) vs. Emma's Average Speed (m/s)")
 
 temp_avg_hrt = 
   tidy_training %>% 
@@ -284,7 +283,7 @@ humid_avg_speed =
   geom_smooth(se = FALSE, color = "dark grey") + 
     labs(
     x = "Humidity (%)", 
-    y = "Average Speed") + 
+    y = "Average Speed (m/s)") + 
   scale_x_continuous(breaks = scales::pretty_breaks(n = 5)) + 
   scale_y_continuous(breaks = scales::pretty_breaks(n = 5)) +
   theme(axis.line = element_line(color = "grey"), 
@@ -292,7 +291,7 @@ humid_avg_speed =
         legend.position = "none", 
         panel.grid.major = element_line(color = "light grey", linetype = "dashed"),
         plot.title = element_text(hjust = 0.5)) + 
-  ggtitle("Humidity (%) vs. Emma's Average Speed")
+  ggtitle("Humidity (%) vs. Emma's Average Speed (m/s)")
 
 humid_avg_hrt = 
   tidy_training %>% 
