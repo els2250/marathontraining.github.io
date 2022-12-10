@@ -3,6 +3,7 @@ title: "Analysis of Emma's Marathon Training and Race Day Performance"
 output: 
   html_document:
     toc: true
+    code_folding: hide
     toc_float: true
 ---
 
@@ -39,10 +40,14 @@ Emma and her mom after finishing the 2022 New York City Marathon
 
 ## Screencast
 
+<center>
 
+```{r}
+vembedr::embed_url("https://youtu.be/WIHkB06QG7I")
+```
 
+</center>
 
-<br/> 
 <br/> 
 
 ### Thanks for coming to our website!
