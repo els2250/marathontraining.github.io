@@ -327,51 +327,25 @@ mutate(group = case_when(
 ```
 
 Recode
-```{r}
-marathon_geo =
-  marathon_day %>% 
-  mutate(
-    latitude  = position_lat,
-    longitude = position_long) %>% 
-  select(-position_lat, -position_long)
-```
 
 ```{r}
 marathon_speed =
 marathon_geo %>% 
   group_by(group) %>% 
   mutate(
-    speed = 
-  mean(enhanced_speed))
+    speed_km = 
+  enhanced_speed*2.237)
 ```
 
 Aggregate Data
 ```{r}
-agg = aggregate(marathon_geo,
+agg = aggregate(marathon_speed,
                 by = list(marathon_geo$group),
                 FUN = mean)
 ```
 
 Aggregate Leaflet Plot
 
-```{echo = FALSE, results='asis', warning=FALSE, message=FALSE}
-leaflet() %>% 
-  addTiles() %>% 
-  addCircleMarkers(data = agg,
-             lng = ~longitude,
-             lat = ~latitude,
-             label = ~Group.1,
-             radius = 7,
-             color = "orange",
-             stroke = TRUE, fillOpacity = 0.75,
-             popup = ~paste("Mile:", Group.1,
-                            "<br>Speed:", enhanced_speed,
-                            "<br>HR:", heart_rate,
-                             "<br>Cadence:", cadence,
-                            "<br>Altitude:", enhanced_altitude)) %>% 
-  addProviderTiles(providers$CartoDB.Positron)
-```
-
 ```{r}
 leaflet() %>% 
   addTiles() %>% 
@@ -383,7 +357,7 @@ leaflet() %>%
              color = "orange",
              stroke = TRUE, fillOpacity = 0.75,
              popup = ~paste("Mile:", Group.1,
-                            "<br>Speed:", enhanced_speed,
+                            "<br>Speed:", speed_km,
                             "<br>HR:", heart_rate,
                              "<br>Cadence:", cadence,
                             "<br>Altitude:", enhanced_altitude)) %>% 
