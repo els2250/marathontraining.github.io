@@ -188,10 +188,7 @@ tidy_training %>%
 
 The density plot above illustrates the mileage at which Emma run's most often during her training period. The plot peaks at a distance of approximately 7km, indicating that 7km is the length of most of Emma's runs during heer training period.
 
-### Choose Your Graph (Drop down list of Y and X)
-Temperature vs average speed/average heart rate/relative effort (all of these)
-
-#### Temperature vs. Average Speed
+### Temperature vs. Average Speed
 
 ```{r, warning = FALSE, message = FALSE, error = FALSE}
 tidy_training %>% 
@@ -213,7 +210,7 @@ tidy_training %>%
 
 Although we expected Emma's speed to be inversely proportional to the weather temperature, Emma's average speed stayed approximately steady throughout the training period, with a speed of 3 meters per second (10.8 km per hour), while temperature varied between 6.58 degrees Celsius and 27.89 degrees Celsius.
 
-#### Performance vs. Temperature
+### Performance vs. Temperature
 
 ```{r, warning = FALSE, message = FALSE, error = FALSE}
 temp_avg_speed = 
@@ -277,7 +274,7 @@ Additionally, although we hypothesized that external temperature would be invers
 
 Finally, although we hypothesized that external temperature would be inversely related to Emma's relative effort, the plot on the bottom right demonstrates the relationship between external temperature and Emma's relative effort during her training period. The variable relative effort is calculated by Strava and based off of her heart rate during the training session. The plot demonstrates that while temperature varied between 6.58 degrees Celsius and 27.89 degrees Celsius, Emma's relative effort averaged around 150.
 
-#### Performance vs. Humidity
+### Performance vs. Humidity
 
 ```{r, warning = FALSE, message = FALSE, error = FALSE}
 humid_avg_speed = 
@@ -341,7 +338,7 @@ Additionally, although we hypothesized that external humidity would be inversely
 
 Finally, although we hypothesized that external humidity would be inversely related to Emma's relatie effort, the plot on the bottom right demonstrates the relationship between external humidity and Emma's relative effort during her training period. The variable relative effort is calculated by Strava and based off of her heart rate during the training session. The plot demonstrates that while humidity varied between 32% and 96%, Emma's relative effort averaged around 150.
 
-#### Interactive Marathon Route Map
+### Interactive Marathon Route Map
 NOTE: Install Leaflet Prior to Running
 
 Loading and Cleaning the Data
