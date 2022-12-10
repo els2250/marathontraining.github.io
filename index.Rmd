@@ -10,11 +10,9 @@ output:
 
 ## Introduction
 
-On November 6th, 2022, Emma Sexton ran her first marathon. One month later, we analyzed the data to assess factors that impacted her training and race day performance. 
-
-<br/> 
-
-## Screencast
+Welcome to our website! On November 6th, 2022, Emma Sexton ran in the New York City Marathon, her first (and certainly not last) marathon! One month later, we analyzed Emma’s marathon training and race day data, to assess how environmental factors impacted her training and race day performance. Shoutout to all marathon runners in the class, you are all beasts! Enjoy!
+ 
+P.S. We hope you think this website looks at least a little bit like Strava (we tried).
 
 <br/> 
 
@@ -37,3 +35,6 @@ Emma and her mom after finishing the 2022 New York City Marathon
 * Olivia Wang (hw2852)
 * Mayuri Albal (ma4197)
 
+<br/> 
+
+## Screencast
