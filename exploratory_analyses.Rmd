@@ -104,27 +104,6 @@ tidy_training %>%
 
 The density plot above illustrates the mileage at which Emma run's most often during her training period. The plot peaks at a distance of approximately 7km, indicating that 7km is the length of most of Emma's runs during her training period.
 
-### Temperature vs. Average Speed
-
-```{r, warning = FALSE, message = FALSE, error = FALSE}
-tidy_training %>% 
-  ggplot(aes(x = weather_temperature, y = average_speed)) + 
-  geom_point(color = c("#FFA500")) +
-  geom_smooth(se = FALSE, color = "dark grey") + 
-    labs(
-    title = "Temperature (C) vs. Emma's Average Speed (m/s)",
-    x = "Temperature (C)", 
-    y = "Average Speed (m/s)") + 
-  scale_x_continuous(breaks = scales::pretty_breaks(n = 5)) + 
-  scale_y_continuous(breaks = scales::pretty_breaks(n = 5)) +
-  theme(axis.line = element_line(color = "grey"), 
-        panel.background = element_blank(), 
-        legend.position = "none", 
-        panel.grid.major = element_line(color = "light grey", linetype = "dashed"),
-        plot.title = element_text(hjust = 0.5))
-```
-
-Although we expected Emma's speed to be inversely proportional to the weather temperature, Emma's average speed stayed approximately steady throughout the training period, with a speed of 3 meters per second (10.8 km per hour), while temperature varied between 6.58 degrees Celsius and 27.89 degrees Celsius.
 
 ### Performance vs. Temperature
 
@@ -184,11 +163,11 @@ temp_avg_speed /
 (temp_avg_hrt | temp_rel_effort)
 ```
 
-Although we expected Emma's speed to be inversely proportional to the weather temperature, Emma's average speed stayed approximately steady throughout the training period, with a speed of 3 meters per second (10.8 km per hour), while temperature varied between 6.58 degrees Celsius and 27.89 degrees Celsius, as demonstrated in the top plot above. 
+Although we expected Emma's speed to be inversely proportional to the weather temperature, Emma's average speed stayed approximately steady throughout the training period, with a speed of 3 meters per second (10.8 km per hour), while temperature varied between 6.58 degrees Celsius and 27.89 degrees Celsius. 
 
-Additionally, although we hypothesized that external temperature would be inversely related to Emma's average heart rate, the plot on the bottom left demonstrates the relationship between external temperature and Emma's average heart rate. While temperature varied between 6.58 degrees Celsius and 27.89 degrees Celsius, Emma's heart rate averaged around 155.
+Additionally, while we hypothesized that external temperature would be directly related to Emma's average heart rate, the plot on the bottom left demonstrates that as temperature increases, there is little noticeable change in Emma's average heart rate. Daily temperatures varied between 6.58 degrees Celsius and 27.89 degrees Celsius and Emma's heart rate averaged around 155 beats per minute.
 
-Finally, although we hypothesized that external temperature would be inversely related to Emma's relative effort, the plot on the bottom right demonstrates the relationship between external temperature and Emma's relative effort during her training period. The variable relative effort is calculated by Strava and based off of her heart rate during the training session. The plot demonstrates that while temperature varied between 6.58 degrees Celsius and 27.89 degrees Celsius, Emma's relative effort averaged around 150.
+Finally, we also hypothesized that external temperature would be directly related to Emma's relative effort; however, the plot on the bottom right demonstrates that external temperature and Emma's relative effort do not appear to be correlated. The variable `relative_effort` is calculated by Strava and based off of her maximum heart rate and pre-established heart rate zones. The plot demonstrates that while temperature varied between 6.58 degrees Celsius and 27.89 degrees Celsius, Emma's relative effort averaged around 150.
 
 ### Performance vs. Humidity
 
@@ -250,6 +229,6 @@ humid_avg_speed /
 
 Although we expected Emma's speed to be inversely related to the external humidity, Emma's average speed stayed approximately steady throughout the training period, with a speed of 3 meters per second (10.8 km per hour), while humidity varied between between 32% and 96%, as demonstrated in the top plot above. 
 
-Additionally, although we hypothesized that external humidity would be inversely related to Emma's average heart rate, the plot on the bottom left demonstrates the relationship between external humidity and Emma's average heart rate. While humidity varied between 32% and 96%, Emma's heart rate averaged around 155.
+Additionally, while we hypothesized that external humidity would be directly related to Emma's average heart rate, the plot on the bottom left demonstrates that there is a potential positive relationship between humidity and Emma's average heart rate. Humidity varied between 32% and 96% and Emma's average heart rate ranged between 145 to 165 beats per minute. 
 
-Finally, although we hypothesized that external humidity would be inversely related to Emma's relative effort, the plot on the bottom right demonstrates the relationship between external humidity and Emma's relative effort during her training period. The variable relative effort is calculated by Strava and based off of her heart rate during the training session. The plot demonstrates that while humidity varied between 32% and 96%, Emma's relative effort averaged around 150.
+Finally, although we hypothesized that external humidity would be directly related to Emma's relative effort, the plot on the bottom right demonstrates that relative effort may plateau at 150 once humidity reaches 70%; however, there is a large degree of variation in relative effort in this data set. The variable relative effort is calculated by Strava and based off of her heart rate during the training session. While humidity varied between 32% and 96%, Emma's relative effort averaged around 150.

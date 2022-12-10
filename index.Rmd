@@ -1,12 +1,10 @@
 ---
-title: "In-Depth Analysis of Emma's Marathon Training"
+title: "Analysis of Emma's Marathon Training and Race Day Performance"
 output: 
   html_document:
     toc: true
     toc_float: true
 ---
-
-![](images/banner.png)
 
 <br/>  
 
@@ -40,3 +38,18 @@ Emma and her mom after finishing the 2022 New York City Marathon
 <br/> 
 
 ## Screencast
+
+
+
+
+<br/> 
+<br/> 
+
+### Thanks for coming to our website!
+
+<center> 
+
+![](images/happy_emma.JPG){width=50%}
+
+</center>
+

@@ -15,6 +15,8 @@ navbar:
         href: models_speed.html
       - text: "Regression Models: Relative Effort"
         href: models_rel_effort.html
+    - text: "AJG"
+      href: jfg.html
     - icon: fa-envelope fa-lg
       href: mailto:<gw2442@cumc.columbia.edu; els2250@cumc.columbia.edu; hw2852@cumc.columbia.edu; ma4197@cumc.columbia.edu>
     - icon: fa-github fa-lg

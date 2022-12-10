@@ -1,0 +1,45 @@
+---
+title: "Ah, Just for Giggles :)"
+output: 
+  html_document:
+    toc: true
+    code_folding: hide
+    toc_float: true
+---
+
+<br/>  
+
+While completing this project, we had a blast looking at Emma's training / race day photos and videos. To share the fun, we made this tab to show some of our favorite descriptions and photos!
+
+
+### Photos
+
+```{r, echo = FALSE, out.width = "30%", out.height = "30%", fig.show = 'hold', fig.align='center', fig.cap="Emma and her mom celebrating mile 21 with a Gu-cheers!"}
+
+knitr::include_graphics(c("images/emma+mom_cheers.JPG", "images/emma+mom_cheers2.JPG"))
+```
+
+<br/>
+
+<center>
+
+![](images/bald_selfie.jpg){width=25%}
+
+Emma embracing a beautiful October morning with an 18-miler
+
+</center>
+
+### Videos
+
+<center>
+![](images/cheering_on_emma.MOV){width=30%}
+
+Emma at mile 25!
+
+<br/>
+
+![](images/emma_v_stairs.MOV){width=30%}
+
+Emma versus Stairs - Post-Marathon
+
+</center>
