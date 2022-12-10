@@ -9,12 +9,12 @@ output:
 
 <br/>  
 
-While completing this project, we had a blast looking at Emma's training / race day photos and videos. To share the fun, we made this tab to show some of our favorite descriptions and photos!
+While completing this project, we had a blast looking at Emma's training / race day photos and videos. To share the fun, we made this tab to show some of our favorites!
 
 
 ### Photos
 
-```{r, echo = FALSE, out.width = "30%", out.height = "30%", fig.show = 'hold', fig.align='center', fig.cap="Emma and her mom celebrating mile 21 with a Gu-cheers!"}
+```{r, echo = FALSE, out.width = "30%", out.height = "30%", fig.show = 'hold', fig.align='center', fig.cap="Emma and her mom celebrating mile 21 with a Gu cheers!"}
 
 knitr::include_graphics(c("images/emma+mom_cheers.JPG", "images/emma+mom_cheers2.JPG"))
 ```
@@ -43,3 +43,5 @@ Emma at mile 25!
 Emma versus Stairs - Post-Marathon
 
 </center>
+
+Counter for Number of Times 'Emma' was mentioned on this website: 106 (+ many more in edits)

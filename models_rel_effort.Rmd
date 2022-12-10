@@ -71,7 +71,7 @@ fit5 = lm(relative_effort ~ (weather_temperature + dewpoint + humidity)^4, data 
 
 ### Cross-Validation: Relative Effort
 
-We followed the same cross validation process as above. 
+We followed the same cross validation process used for the speed regression models. 
 
 ```{r, warning = FALSE, message = FALSE, error = FALSE}
 cv_df = 
