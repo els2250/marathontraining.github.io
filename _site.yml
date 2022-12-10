@@ -4,11 +4,11 @@ navbar:
   title: "Home"
   right:
     - text: "Final Report"
-      href: backup.html
+      href: final_report2.html
     - text: "Data Visualization"
       href: exploratory_analyses.html
     - text: "Interactive Map"
-      href: descriptive_stats.html
+      href: interactive_map.html
     - text: "Models"
       menu:
       - text: "Regression Models: Speed"
