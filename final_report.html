@@ -437,6 +437,131 @@ these questions evolve over the course of the project? What new
 questions did you consider in the course of your analysis?</h4>
 <p><br/></p>
 </div>
+<div id="data-source-scraping-method-cleaning-etc."
+class="section level4">
+<h4>Data: Source, scraping method, cleaning, etc.</h4>
+<p>Data was collected using the Garmin Forerunner 245 activity watch
+from July 23, 2020 to November 6, 2022. Collected data was uploaded to
+Strava.com after each activity. After granting permission, personal data
+was downloaded from Strava.com. Summary data for each activity post was
+saved in the form of a <code>.csv</code> file (imported using
+<code>tidyverse</code>) and per-second data for each activity was
+compiled and saved in a <code>.fit</code> file (imported using
+<code>FITfileR</code>).</p>
+<div id="importing-data" class="section level5">
+<h5><em>Importing Data</em></h5>
+<p>First, we imported the summary data of all of Emma’s training runs
+from July 23, 2020 to November 6, 2022. In order to clean this data,
+we:</p>
+<ol style="list-style-type: decimal">
+<li>Sorted data to include only information from the time that Emma
+started training for the NYCM, which was on April 4, 2022</li>
+<li>Selected the necessary variables</li>
+</ol>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.2 ──
+## ✔ ggplot2 3.3.6      ✔ purrr   0.3.4 
+## ✔ tibble  3.1.8      ✔ dplyr   1.0.10
+## ✔ tidyr   1.2.0      ✔ stringr 1.4.1 
+## ✔ readr   2.1.2      ✔ forcats 0.5.2 
+## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(FITfileR)
+library(dplyr)
+library(patchwork)
+library(leaflet)</code></pre>
+<pre class="r"><code>training_summary &lt;- read_csv(&quot;activities/activities.csv&quot;) %&gt;% 
+  janitor::clean_names() %&gt;%
+  filter(activity_type == &quot;Run&quot;) %&gt;%
+  select(activity_id, activity_date, activity_name, activity_description, elapsed_time_6, distance_7, max_heart_rate_8, relative_effort_9, max_speed, average_speed, elevation_gain, elevation_loss, max_grade, average_grade, max_cadence, average_cadence, average_heart_rate, calories, weather_temperature, dewpoint, humidity, wind_speed) %&gt;%
+  filter(activity_id &gt;= 6910869137) %&gt;%
+  separate(activity_date, c(&quot;month_date&quot;, &quot;year&quot;, &quot;time&quot;), sep = &quot;, &quot;) %&gt;%
+  mutate(
+    date = str_c(month_date, year, sep = &quot; &quot;),
+    date = as.Date(date, format = &quot;%b%d%Y&quot;)
+  ) %&gt;%
+  select(-month_date, -year) %&gt;%
+  mutate(
+    elapsed_time_min = elapsed_time_6 / 60,
+    distance_km = distance_7,
+    max_heart_rate = max_heart_rate_8,
+    relative_effort = relative_effort_9
+  ) %&gt;%
+  select(-elapsed_time_6, -distance_7, -max_heart_rate_8, -relative_effort_9)</code></pre>
+<pre><code>## New names:
+## Rows: 335 Columns: 84
+## ── Column specification
+## ──────────────────────────────────────────────────────── Delimiter: &quot;,&quot; chr
+## (6): Activity Date, Activity Name, Activity Type, Activity Description,... dbl
+## (49): Activity ID, Elapsed Time...6, Distance...7, Max Heart Rate...8, R... lgl
+## (29): Commute...10, Athlete Weight, Bike Weight, Average Positive Grade,...
+## ℹ Use `spec()` to retrieve the full column specification for this data. ℹ
+## Specify the column types or set `show_col_types = FALSE` to quiet this message.
+## • `Elapsed Time` -&gt; `Elapsed Time...6`
+## • `Distance` -&gt; `Distance...7`
+## • `Max Heart Rate` -&gt; `Max Heart Rate...8`
+## • `Relative Effort` -&gt; `Relative Effort...9`
+## • `Commute` -&gt; `Commute...10`
+## • `Elapsed Time` -&gt; `Elapsed Time...15`
+## • `Distance` -&gt; `Distance...17`
+## • `Max Heart Rate` -&gt; `Max Heart Rate...30`
+## • `Relative Effort` -&gt; `Relative Effort...37`
+## • `Commute` -&gt; `Commute...50`</code></pre>
+<pre class="r"><code>activity_summaries =
+  training_summary %&gt;%
+  select(activity_id, date, time, activity_name, activity_description)
+tidy_training = 
+  training_summary %&gt;%
+  select(-activity_name, -activity_description) %&gt;%
+  select(activity_id, date, time, distance_km, elapsed_time_min, max_speed, average_speed, max_heart_rate, average_heart_rate, relative_effort, everything()) %&gt;% 
+  filter(date != &quot;2022-03-31&quot;, 
+         date != &quot;2022-04-03&quot;)</code></pre>
+<p>Since each Garmin activity was downloaded as an individual FIT file,
+a function was created to iterate across the multiple activities and
+compile a single data frame. As shown below, the function was created to
+read each activity FIT file into R and pull out the records (which
+included data on latitude and longitude, distance, speed, heart rate,
+and cadence), and then each second of activity was merged into a single
+data frame. This function was applied to a list of all file names. A
+<code>for</code> loop was used to generate a list of data frames, and
+then rows were merged using <code>bind_rows</code> to create the final
+data frame, <code>marathon_df</code>.</p>
+</div>
+<div id="data-cleaning" class="section level5">
+<h5><em>Data Cleaning</em></h5>
+<p>After importing, the data frame was then cleaned to include
+activities from the start of marathon training (March 31, 2022) to the
+day of the New York City Marathon (November 6, 2022). Within the
+‘activities’ data set, there were 335 observations and 84 variables. The
+data was filtered to only include observations from ‘activity_type’ that
+were classified as ‘Run’. From this, 22 variables were selected to be
+included in this data set: activity_id, activity_date, activity_name,
+activity_description, elapsed_time_6, distance_7, max_heart_rate_8,
+relative_effort_9, max_speed, average_speed, elevation_gain,
+elevation_loss, max_grade, average_grade, max_cadence, average_cadence,
+average_heart_rate, calories, weather_temperature, dewpoint,
+humidity,and wind_speed.</p>
+<p>Due to Emma’s marathon training beginning March 31st, 2022, the
+‘activity_id’ was used in order to filter any training prior to this.
+Following this, the variable ‘activity_date’ was separated into two
+variables:the date on which the run occurred (‘date’) as well as the
+time when the run began (‘time’). The ‘elapsed_time_6’ variable was
+converted from seconds to minutes (‘elapsed_time_min’). In addition to
+this, the variables names for distance_7, max_heart_rate_8, and
+relative_effort_9 were changed to distance_km, max_heart_rate, and
+relative_effort.</p>
+<p>A new data frame, ‘activities_summaries’ was created in order to
+include the written accounts from each of Emma’s runs, including
+variables ‘activity_name’ and ‘activity_description’.</p>
+<p>The final cleaned data set, ‘tidy_training’, included 110
+observations and 21 variables. Variables included were:activity_id,
+date, time, distance_km, elapsed_time_min, max_speed, average_speed,
+max_heart_rate, average_heart_rate, relative_effort, elevation_gain,
+elevation_loss, max_grade, average_grade, max_cadence, averag_cadence,
+calories, weather_temperature, dewpoint, humidity, and wind_speed.</p>
+</div>
+</div>
 
 
 
