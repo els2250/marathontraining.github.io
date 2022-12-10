@@ -1,15 +1,134 @@
 ---
-title: "Descriptive Statistics"
+title: "Interactive Map"
 output: 
   html_document:
     toc: true
+    code_folding: hide
     toc_float: true
 ---
 
 <br/>  
 
-### Description of Data?? (how things are operationalized)
+### Interactive NYCM Race Map
 
-### Mileage per Week
+```{r, message = FALSE}
+library(tidyverse)
+library(FITfileR)
+library(dplyr)
+library(patchwork)
+library(leaflet)
+library(modelr)
 
-### Mileage per Month
+training_raw <- read_csv("activities/activities.csv") %>% 
+  janitor::clean_names()
+
+training_summary = 
+  training_raw %>% 
+  filter(activity_type == "Run") %>%
+  select(activity_id, activity_date, activity_name, activity_description, elapsed_time_6, distance_7, max_heart_rate_8, relative_effort_9, max_speed, average_speed, elevation_gain, elevation_loss, max_grade, average_grade, max_cadence, average_cadence, average_heart_rate, calories, weather_temperature, dewpoint, humidity, wind_speed) %>%
+  filter(activity_id >= 6910869137) %>%
+  separate(activity_date, c("month_date", "year", "time"), sep = ", ") %>%
+  mutate(
+    date = str_c(month_date, year, sep = " "),
+    date = as.Date(date, format = "%b%d%Y")
+  ) %>%
+  select(-month_date, -year) %>%
+  mutate(
+    elapsed_time_min = elapsed_time_6 / 60,
+    distance_km = distance_7,
+    max_heart_rate = max_heart_rate_8,
+    relative_effort = relative_effort_9
+  ) %>%
+  select(-elapsed_time_6, -distance_7, -max_heart_rate_8, -relative_effort_9)
+activity_summaries =
+  training_summary %>%
+  select(activity_id, date, time, activity_name, activity_description)
+
+tidy_training = 
+  training_summary %>%
+  select(-activity_name, -activity_description) %>%
+  select(activity_id, date, time, distance_km, elapsed_time_min, max_speed, average_speed, max_heart_rate, average_heart_rate, relative_effort, everything()) %>% 
+  filter(date != "2022-03-31", 
+         date != "2022-04-03")
+```
+
+Loading and Cleaning the Data
+```{r, warning = FALSE, message = FALSE, error = FALSE}
+marathon_day <- read_csv("activities/marathon_day.csv")
+
+marathon_day =
+marathon_day %>% 
+mutate(
+  distance_m = distance*0.000621371
+) %>% 
+mutate(group = case_when(
+    between(distance_m, 0,0.9999) ~ "Start",
+    between(distance_m, 1, 1.9999) ~ "1",
+    between(distance_m, 2, 2.9999) ~ "2",
+    between(distance_m, 3, 3.9999) ~ "3",
+    between(distance_m, 4, 4.9999) ~ "4",
+    between(distance_m, 5, 5.9999) ~ "5",
+    between(distance_m, 6, 6.9999) ~ "6",
+    between(distance_m, 7, 7.9999) ~ "7",
+    between(distance_m, 8, 8.9999) ~ "8",
+    between(distance_m, 9, 9.9999) ~ "9",
+    between(distance_m, 10, 10.9999) ~ "10",
+    between(distance_m, 11, 11.9999) ~ "11",
+    between(distance_m, 12, 12.9999) ~ "12",
+    between(distance_m, 13, 13.9999) ~ "13",
+    between(distance_m, 14, 14.9999) ~ "14",
+    between(distance_m, 15, 15.9999) ~ "15",
+    between(distance_m, 16, 2.9999) ~ "16",
+    between(distance_m, 17, 17.9999) ~ "17",
+    between(distance_m, 18, 18.9999) ~ "18",
+    between(distance_m, 19, 19.9999) ~ "19",
+    between(distance_m, 20, 20.9999) ~ "20",
+    between(distance_m, 21, 21.9999) ~ "21",
+    between(distance_m, 22, 22.9999) ~ "22",
+    between(distance_m, 23, 23.9999) ~ "23",
+    between(distance_m, 24, 24.9999) ~ "24",
+    between(distance_m, 25, 25.9999) ~ "25",
+    between(distance_m, 26, 26.9999) ~ "26-Finish")) 
+
+#Recode
+marathon_geo =
+  marathon_day %>% 
+  mutate(
+    latitude  = position_lat,
+    longitude = position_long) %>% 
+  select(-position_lat, -position_long)
+
+marathon_speed =
+marathon_geo %>% 
+  group_by(group) %>% 
+  mutate(
+    speed_mile = 
+  enhanced_speed*2.237)
+
+#Aggregate Data
+agg = aggregate(marathon_speed,
+                by = list(marathon_geo$group),
+                FUN = mean)
+```
+
+In order to display Emma’s progress throughout the NYC Marathon an interactive map was created. Utilizing data from the ‘marathon_day’ data set, cleaning began with converting the distance measurement from kilometers to miles, in order to best display the race. From this, each observation was grouped by mileage (1-26), with a Start (Mile 0) and Finish (Mile 26.6) observation being added as well. Variables ‘position_longitude’ and ‘position_latitude’ were recoded to ‘longitude’ and ‘latitude’ within the data set. A new data set ‘marathon_speed’ was generated in order to group all observations based on mile as well as convert speed from its initial unit of meters per second to miles per hour. The data was then aggregated in order to create averages for each of Emma’s mile statistics such as Speed, Heart Rate, Cadence, as well as Altitude. Leaflet was then used to display all mile markers along the 26.6 Mile route, in addition to a pop-up that includes Emma’s summary statistics for each running stint of the marathon.
+
+```{r, warning = FALSE, message = FALSE, error = FALSE}
+leaflet() %>% 
+  addTiles() %>% 
+  addCircleMarkers(data = agg,
+             lng = ~longitude,
+             lat = ~latitude,
+             label = ~Group.1,
+             radius = 7,
+             color = "orange",
+             stroke = TRUE, fillOpacity = 0.75,
+             popup = ~paste("Mile:", Group.1,
+                            "<br>Speed:", speed_mile,
+                            "<br>HR:", heart_rate,
+                             "<br>Cadence:", cadence,
+                            "<br>Altitude:", enhanced_altitude)) %>% 
+  addProviderTiles(providers$CartoDB.Positron)
+```
+
+The leaflet plot above demonstrates Emma's NYCM racing path. Each marker indicates the mile number and average speed (miles/hour), heart rate, cadence, and altitude for that mile. As a note, Strava failed to record information for Mile 3, and is therefore not included in the leaflet above. 

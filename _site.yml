@@ -5,18 +5,20 @@ navbar:
   right:
     - text: "Final Report"
       href: final_report.html
-    - text: "Descriptive Statistics"
+    - text: "Interactive Map"
       href: descriptive_stats.html
-    - text: "Exploratory Analyses"
+    - text: "Data Visualization"
       href: exploratory_analyses.html
+    - text: "Models"
       menu:
-      - text: "Tab to nowhere"
+      - text: "Regression Models: Speed"
+        href: models_speed.html
+      - text: "Regression Models: Relative Effort"
+        href: models_rel_effort.html
     - icon: fa-envelope fa-lg
       href: mailto:<gw2442@cumc.columbia.edu; els2250@cumc.columbia.edu; hw2852@cumc.columbia.edu; ma4197@cumc.columbia.edu>
     - icon: fa-github fa-lg
       href: https://github.com/els2250/marathontraining.github.io
-    - icon: fa-brands fa-person-running
-      href: https://www.strava.com/
 output:
   html_document:
     theme: united

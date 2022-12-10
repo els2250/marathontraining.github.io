@@ -11,7 +11,7 @@
 
 
 
-<title>Exploratory Analyses</title>
+<title>Data Visualization</title>
 
 <script src="site_libs/header-attrs-2.16/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -33,6 +33,7 @@
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
 <link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
@@ -228,6 +229,9 @@ $(document).ready(function () {
 </style>
 
 <!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
 
 
 
@@ -334,16 +338,24 @@ div.tocify {
   <a href="final_report.html">Final Report</a>
 </li>
 <li>
-  <a href="descriptive_stats.html">Descriptive Statistics</a>
+  <a href="descriptive_stats.html">Interactive Map</a>
+</li>
+<li>
+  <a href="exploratory_analyses.html">Data Visualization</a>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-    Exploratory Analyses
+    Models
      
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
-    <li class="dropdown-header">Tab to nowhere</li>
+    <li>
+      <a href="models_speed.html">Regression Models: Speed</a>
+    </li>
+    <li>
+      <a href="models_rel_effort.html">Regression Models: Relative Effort</a>
+    </li>
   </ul>
 </li>
 <li>
@@ -358,12 +370,6 @@ div.tocify {
      
   </a>
 </li>
-<li>
-  <a href="https://www.strava.com/">
-    <span class="fa fa-brands fa-person-running"></span>
-     
-  </a>
-</li>
       </ul>
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
@@ -371,16 +377,301 @@ div.tocify {
 
 <div id="header">
 
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
 
 
-<h1 class="title toc-ignore">Exploratory Analyses</h1>
+
+<h1 class="title toc-ignore">Data Visualization</h1>
 
 </div>
 
 
 <p><br/></p>
 <div id="visualizations" class="section level3">
-<h3><strong>Visualizations</strong></h3>
+<h3>Visualizations</h3>
+<pre class="r"><code>library(tidyverse)
+library(FITfileR)
+library(dplyr)
+library(patchwork)
+library(leaflet)
+library(modelr)
+
+training_raw &lt;- read_csv(&quot;activities/activities.csv&quot;) %&gt;% 
+  janitor::clean_names()
+
+training_summary = 
+  training_raw %&gt;% 
+  filter(activity_type == &quot;Run&quot;) %&gt;%
+  select(activity_id, activity_date, activity_name, activity_description, elapsed_time_6, distance_7, max_heart_rate_8, relative_effort_9, max_speed, average_speed, elevation_gain, elevation_loss, max_grade, average_grade, max_cadence, average_cadence, average_heart_rate, calories, weather_temperature, dewpoint, humidity, wind_speed) %&gt;%
+  filter(activity_id &gt;= 6910869137) %&gt;%
+  separate(activity_date, c(&quot;month_date&quot;, &quot;year&quot;, &quot;time&quot;), sep = &quot;, &quot;) %&gt;%
+  mutate(
+    date = str_c(month_date, year, sep = &quot; &quot;),
+    date = as.Date(date, format = &quot;%b%d%Y&quot;)
+  ) %&gt;%
+  select(-month_date, -year) %&gt;%
+  mutate(
+    elapsed_time_min = elapsed_time_6 / 60,
+    distance_km = distance_7,
+    max_heart_rate = max_heart_rate_8,
+    relative_effort = relative_effort_9
+  ) %&gt;%
+  select(-elapsed_time_6, -distance_7, -max_heart_rate_8, -relative_effort_9)
+activity_summaries =
+  training_summary %&gt;%
+  select(activity_id, date, time, activity_name, activity_description)
+
+tidy_training = 
+  training_summary %&gt;%
+  select(-activity_name, -activity_description) %&gt;%
+  select(activity_id, date, time, distance_km, elapsed_time_min, max_speed, average_speed, max_heart_rate, average_heart_rate, relative_effort, everything()) %&gt;% 
+  filter(date != &quot;2022-03-31&quot;, 
+         date != &quot;2022-04-03&quot;)</code></pre>
+<p>To first visualize Emma’s training schedule, we created a weekly
+mileage plot illustrating her mileage (km) ran over her training period.
+We then looked to investigate the optimal running length for her
+training sessions using a density plot, as well as investigating the
+relationship between temperature and average speed, average heart rate,
+and relative effort. We then investigated the relationship between
+humidity and average speed, average heart rate, and relative effort.
+Finally, we plotted Emma’s NYCM racing path throughout NYC, including
+average speed, heart rate, cadence, and altitude for each mile during
+the race.</p>
+<p>Note: data only includes Emma’s logged activities - rest days were
+not included.</p>
+</div>
+<div id="mileage-over-time" class="section level3">
+<h3>Mileage Over Time</h3>
+<pre class="r"><code>tidy_training = tidy_training %&gt;% 
+  mutate(week = as.numeric(strftime(date, format = &quot;%V&quot;)) - 13) %&gt;% 
+  group_by(week) %&gt;%
+  mutate(weekly_distance_km = sum(distance_km))
+
+tidy_training %&gt;%
+  ggplot(aes(x = week, y = weekly_distance_km)) +
+  geom_point(color = c(&quot;#FFA500&quot;)) +
+  geom_line(color = c(&quot;#FFA500&quot;)) + 
+  labs(
+    title = &quot;Weekly Distance Ran by Emma (km)&quot;,
+    x = &quot;Week&quot;, 
+    y = &quot;Distance (km)&quot;) + 
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 5)) + 
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 5)) +
+  theme(axis.line = element_line(color = &quot;grey&quot;), 
+        panel.background = element_blank(), 
+        legend.position = &quot;none&quot;, 
+        panel.grid.major = element_line(color = &quot;light grey&quot;, linetype = &quot;dashed&quot;),
+        plot.title = element_text(hjust = 0.5))</code></pre>
+<p><img src="exploratory_analyses_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p>Emma’s mileage overtime gradually increased throughout her training
+period, peaking at Week 20 where she ran 70.28 km over the course of the
+week. Weeks 21-25 demonstrate a steep drop in weekly mileage. This was
+due to Emma’s illnesses and injuries, making her unable to run. The plot
+above demonstrates Emma’s ramp up in training mileage in preparation for
+the NYCM.</p>
+</div>
+<div id="mileage-density-plot" class="section level3">
+<h3>Mileage Density Plot</h3>
+<pre class="r"><code>tidy_training %&gt;% 
+  ggplot(aes(x = distance_km), color = c(&quot;#FFA500&quot;)) +
+  geom_density(alpha = 0.5, fill = c(&quot;#FFA500&quot;)) + 
+  labs(
+    title = &quot;Density of Daily Distances Ran by Emma (km)&quot;,
+    x = &quot;Distance (km)&quot;, 
+    y = &quot;Density&quot;) + 
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 5)) + 
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 5)) +
+  theme(axis.line = element_line(color = &quot;grey&quot;), 
+        panel.background = element_blank(), 
+        legend.position = &quot;none&quot;, 
+        panel.grid.major = element_line(color = &quot;light grey&quot;, linetype = &quot;dashed&quot;),
+        plot.title = element_text(hjust = 0.5))</code></pre>
+<p><img src="exploratory_analyses_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>The density plot above illustrates the mileage at which Emma run’s
+most often during her training period. The plot peaks at a distance of
+approximately 7km, indicating that 7km is the length of most of Emma’s
+runs during her training period.</p>
+</div>
+<div id="temperature-vs.-average-speed" class="section level3">
+<h3>Temperature vs. Average Speed</h3>
+<pre class="r"><code>tidy_training %&gt;% 
+  ggplot(aes(x = weather_temperature, y = average_speed)) + 
+  geom_point(color = c(&quot;#FFA500&quot;)) +
+  geom_smooth(se = FALSE, color = &quot;dark grey&quot;) + 
+    labs(
+    title = &quot;Temperature (C) vs. Emma&#39;s Average Speed (m/s)&quot;,
+    x = &quot;Temperature (C)&quot;, 
+    y = &quot;Average Speed (m/s)&quot;) + 
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 5)) + 
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 5)) +
+  theme(axis.line = element_line(color = &quot;grey&quot;), 
+        panel.background = element_blank(), 
+        legend.position = &quot;none&quot;, 
+        panel.grid.major = element_line(color = &quot;light grey&quot;, linetype = &quot;dashed&quot;),
+        plot.title = element_text(hjust = 0.5))</code></pre>
+<p><img src="exploratory_analyses_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p>Although we expected Emma’s speed to be inversely proportional to the
+weather temperature, Emma’s average speed stayed approximately steady
+throughout the training period, with a speed of 3 meters per second
+(10.8 km per hour), while temperature varied between 6.58 degrees
+Celsius and 27.89 degrees Celsius.</p>
+</div>
+<div id="performance-vs.-temperature" class="section level3">
+<h3>Performance vs. Temperature</h3>
+<pre class="r"><code>temp_avg_speed = 
+  tidy_training %&gt;% 
+  ggplot(aes(x = weather_temperature, y = average_speed)) + 
+  geom_point(color = c(&quot;#FFA500&quot;)) +
+  geom_smooth(se = FALSE, color = &quot;dark grey&quot;) + 
+    labs(
+    x = &quot;Temperature (C)&quot;, 
+    y = &quot;Average Speed (m/s)&quot;) + 
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 5)) + 
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 5)) +
+  theme(axis.line = element_line(color = &quot;grey&quot;), 
+        panel.background = element_blank(), 
+        legend.position = &quot;none&quot;, 
+        panel.grid.major = element_line(color = &quot;light grey&quot;, linetype = &quot;dashed&quot;),
+        plot.title = element_text(hjust = 0.5)) + 
+  ggtitle(&quot;Temperature (C) vs. Emma&#39;s Average Speed (m/s)&quot;)
+
+temp_avg_hrt = 
+  tidy_training %&gt;% 
+  ggplot(aes(x = weather_temperature, y = average_heart_rate)) + 
+  geom_point(color = c(&quot;#FFA500&quot;)) +
+  geom_smooth(se = FALSE, color = &quot;dark grey&quot;) + 
+    labs(
+    x = &quot;Temperature (C)&quot;, 
+    y = &quot;Average Heart Rate (BPM)&quot;) + 
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 5)) + 
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 5)) +
+  theme(axis.line = element_line(color = &quot;grey&quot;), 
+        panel.background = element_blank(), 
+        legend.position = &quot;none&quot;, 
+        panel.grid.major = element_line(color = &quot;light grey&quot;, linetype = &quot;dashed&quot;),
+        plot.title = element_text(hjust = 0.5)) + 
+  ggtitle(&quot;Temperature (C) vs.\n Emma&#39;s Average Heart Rate (BPM)&quot;)
+
+temp_rel_effort = 
+  tidy_training %&gt;% 
+  ggplot(aes(x = weather_temperature, y = relative_effort)) + 
+  geom_point(color = c(&quot;#FFA500&quot;)) +
+  geom_smooth(se = FALSE, color = &quot;dark grey&quot;) + 
+    labs(
+    x = &quot;Temperature (C)&quot;, 
+    y = &quot;Relative Effort&quot;) + 
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 5)) + 
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 5)) +
+  theme(axis.line = element_line(color = &quot;grey&quot;), 
+        panel.background = element_blank(), 
+        legend.position = &quot;none&quot;, 
+        panel.grid.major = element_line(color = &quot;light grey&quot;, linetype = &quot;dashed&quot;),
+        plot.title = element_text(hjust = 0.5)) + 
+  ggtitle(&quot;Temperature (C) vs.\n Emma&#39;s Relative Effort&quot;)
+
+temp_avg_speed /
+(temp_avg_hrt | temp_rel_effort)</code></pre>
+<p><img src="exploratory_analyses_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p>Although we expected Emma’s speed to be inversely proportional to the
+weather temperature, Emma’s average speed stayed approximately steady
+throughout the training period, with a speed of 3 meters per second
+(10.8 km per hour), while temperature varied between 6.58 degrees
+Celsius and 27.89 degrees Celsius, as demonstrated in the top plot
+above.</p>
+<p>Additionally, although we hypothesized that external temperature
+would be inversely related to Emma’s average heart rate, the plot on the
+bottom left demonstrates the relationship between external temperature
+and Emma’s average heart rate. While temperature varied between 6.58
+degrees Celsius and 27.89 degrees Celsius, Emma’s heart rate averaged
+around 155.</p>
+<p>Finally, although we hypothesized that external temperature would be
+inversely related to Emma’s relative effort, the plot on the bottom
+right demonstrates the relationship between external temperature and
+Emma’s relative effort during her training period. The variable relative
+effort is calculated by Strava and based off of her heart rate during
+the training session. The plot demonstrates that while temperature
+varied between 6.58 degrees Celsius and 27.89 degrees Celsius, Emma’s
+relative effort averaged around 150.</p>
+</div>
+<div id="performance-vs.-humidity" class="section level3">
+<h3>Performance vs. Humidity</h3>
+<pre class="r"><code>humid_avg_speed = 
+  tidy_training %&gt;% 
+  ggplot(aes(x = humidity, y = average_speed)) + 
+  geom_point(color = c(&quot;#FFA500&quot;)) +
+  geom_smooth(se = FALSE, color = &quot;dark grey&quot;) + 
+    labs(
+    x = &quot;Humidity (%)&quot;, 
+    y = &quot;Average Speed (m/s)&quot;) + 
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 5)) + 
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 5)) +
+  theme(axis.line = element_line(color = &quot;grey&quot;), 
+        panel.background = element_blank(), 
+        legend.position = &quot;none&quot;, 
+        panel.grid.major = element_line(color = &quot;light grey&quot;, linetype = &quot;dashed&quot;),
+        plot.title = element_text(hjust = 0.5)) + 
+  ggtitle(&quot;Humidity (%) vs. Emma&#39;s Average Speed (m/s)&quot;)
+
+humid_avg_hrt = 
+  tidy_training %&gt;% 
+  ggplot(aes(x = humidity, y = average_heart_rate)) + 
+  geom_point(color = c(&quot;#FFA500&quot;)) +
+  geom_smooth(se = FALSE, color = &quot;dark grey&quot;) + 
+    labs(
+    x = &quot;Humidity (%)&quot;, 
+    y = &quot;Average Heart Rate (BPM)&quot;) + 
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 5)) + 
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 5)) +
+  theme(axis.line = element_line(color = &quot;grey&quot;), 
+        panel.background = element_blank(), 
+        legend.position = &quot;none&quot;, 
+        panel.grid.major = element_line(color = &quot;light grey&quot;, linetype = &quot;dashed&quot;),
+        plot.title = element_text(hjust = 0.5)) + 
+  ggtitle(&quot;Humidity (%) vs.\n Emma&#39;s Average Heart Rate (BPM)&quot;)
+
+humid_rel_effort = 
+  tidy_training %&gt;% 
+  ggplot(aes(x = humidity, y = relative_effort)) + 
+  geom_point(color = c(&quot;#FFA500&quot;)) +
+  geom_smooth(se = FALSE, color = &quot;dark grey&quot;) + 
+    labs(
+    x = &quot;Humidity (%)&quot;, 
+    y = &quot;Relative Effort&quot;) + 
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 5)) + 
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 5)) +
+  theme(axis.line = element_line(color = &quot;grey&quot;), 
+        panel.background = element_blank(), 
+        legend.position = &quot;none&quot;, 
+        panel.grid.major = element_line(color = &quot;light grey&quot;, linetype = &quot;dashed&quot;),
+        plot.title = element_text(hjust = 0.5)) + 
+  ggtitle(&quot;Humidity (%) vs.\n Emma&#39;s Relative Effort&quot;)
+
+humid_avg_speed /
+(humid_avg_hrt | humid_rel_effort)</code></pre>
+<p><img src="exploratory_analyses_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p>Although we expected Emma’s speed to be inversely related to the
+external humidity, Emma’s average speed stayed approximately steady
+throughout the training period, with a speed of 3 meters per second
+(10.8 km per hour), while humidity varied between between 32% and 96%,
+as demonstrated in the top plot above.</p>
+<p>Additionally, although we hypothesized that external humidity would
+be inversely related to Emma’s average heart rate, the plot on the
+bottom left demonstrates the relationship between external humidity and
+Emma’s average heart rate. While humidity varied between 32% and 96%,
+Emma’s heart rate averaged around 155.</p>
+<p>Finally, although we hypothesized that external humidity would be
+inversely related to Emma’s relative effort, the plot on the bottom
+right demonstrates the relationship between external humidity and Emma’s
+relative effort during her training period. The variable relative effort
+is calculated by Strava and based off of her heart rate during the
+training session. The plot demonstrates that while humidity varied
+between 32% and 96%, Emma’s relative effort averaged around 150.</p>
 </div>
 
 
@@ -418,6 +709,11 @@ $(document).ready(function () {
 </script>
 
 <!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
 
 <script>
 $(document).ready(function ()  {

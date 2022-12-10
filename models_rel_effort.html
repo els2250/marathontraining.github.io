@@ -11,7 +11,7 @@
 
 
 
-<title>In-Depth Analysis of Emma’s Marathon Training</title>
+<title>Regression Models: Relative Effort</title>
 
 <script src="site_libs/header-attrs-2.16/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -33,6 +33,7 @@
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
 <link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
@@ -228,6 +229,9 @@ $(document).ready(function () {
 </style>
 
 <!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
 
 
 
@@ -373,54 +377,153 @@ div.tocify {
 
 <div id="header">
 
-
-
-<h1 class="title toc-ignore">In-Depth Analysis of Emma’s Marathon
-Training</h1>
-
-</div>
-
-
-<p><br/></p>
-<div id="introduction" class="section level2">
-<h2>Introduction</h2>
-<p>On November 6th, 2022, Emma Sexton ran her first marathon. One month
-later, we analyzed the data to assess factors that impacted her training
-and race day performance.</p>
-<p><br/></p>
-</div>
-<div id="screencast" class="section level2">
-<h2>Screencast</h2>
-<p><br/></p>
-</div>
-<div id="motivation" class="section level2">
-<h2>Motivation</h2>
-<p>Running a marathon requires an immense amount of time, effort, and
-dedication. First-time marathon runners are forced to make decisions
-with little knowledge of what to expect. Being ill-prepared and
-over-training are two common experiences that occur during training and
-on race day. Emma, one of our group members, ran the New York City
-Marathon (NYCM) this past fall, which was her first marathon. After
-completing the marathon on November 6th, Emma was prepared to start
-training for the next one. Therefore, we are interested in understanding
-the impact of external factors, such as temperature, wind, elevation,
-etc., on Emma’s speed and performance during the marathon, while also
-considering how training changed over time in order to improve her
-training for the next marathon.</p>
-<center>
-<p><img src="images/emma+hermom.jpg" style="width:50.0%" /></p>
-Emma and her mom after finishing the 2022 New York City Marathon
-</center>
-<p><br/></p>
-</div>
-<div id="group-members" class="section level2">
-<h2>Group Members</h2>
-<ul>
-<li>Gwyneth Wei (gw2442)</li>
-<li>Emma Sexton (els2250)</li>
-<li>Olivia Wang (hw2852)</li>
-<li>Mayuri Albal (ma4197)</li>
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
 </ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Regression Models: Relative Effort</h1>
+
+</div>
+
+
+<p><br/></p>
+<div id="regression-models-relative-effort" class="section level3">
+<h3>Regression Models: Relative Effort</h3>
+<pre class="r"><code>library(tidyverse)
+library(FITfileR)
+library(dplyr)
+library(patchwork)
+library(leaflet)
+library(modelr)
+
+training_raw &lt;- read_csv(&quot;activities/activities.csv&quot;) %&gt;% 
+  janitor::clean_names()
+
+training_summary = 
+  training_raw %&gt;% 
+  filter(activity_type == &quot;Run&quot;) %&gt;%
+  select(activity_id, activity_date, activity_name, activity_description, elapsed_time_6, distance_7, max_heart_rate_8, relative_effort_9, max_speed, average_speed, elevation_gain, elevation_loss, max_grade, average_grade, max_cadence, average_cadence, average_heart_rate, calories, weather_temperature, dewpoint, humidity, wind_speed) %&gt;%
+  filter(activity_id &gt;= 6910869137) %&gt;%
+  separate(activity_date, c(&quot;month_date&quot;, &quot;year&quot;, &quot;time&quot;), sep = &quot;, &quot;) %&gt;%
+  mutate(
+    date = str_c(month_date, year, sep = &quot; &quot;),
+    date = as.Date(date, format = &quot;%b%d%Y&quot;)
+  ) %&gt;%
+  select(-month_date, -year) %&gt;%
+  mutate(
+    elapsed_time_min = elapsed_time_6 / 60,
+    distance_km = distance_7,
+    max_heart_rate = max_heart_rate_8,
+    relative_effort = relative_effort_9
+  ) %&gt;%
+  select(-elapsed_time_6, -distance_7, -max_heart_rate_8, -relative_effort_9)
+activity_summaries =
+  training_summary %&gt;%
+  select(activity_id, date, time, activity_name, activity_description)
+
+tidy_training = 
+  training_summary %&gt;%
+  select(-activity_name, -activity_description) %&gt;%
+  select(activity_id, date, time, distance_km, elapsed_time_min, max_speed, average_speed, max_heart_rate, average_heart_rate, relative_effort, everything()) %&gt;% 
+  filter(date != &quot;2022-03-31&quot;, 
+         date != &quot;2022-04-03&quot;)</code></pre>
+<p>Additionally, we hypothesize that Emma’s relative effort is dependent
+on temperature. To test this hypothesis, we built the following
+models:</p>
+<ul>
+<li>Relative effort vs temperature</li>
+<li>Relative effort vs dewpoint</li>
+<li>Relative effort vs humidity</li>
+<li>Relative effort vs elevation gain and wind speed, and all
+interactions</li>
+<li>Relative effort vs temperature and dewpoint, and all
+interactions</li>
+</ul>
+<pre class="r"><code>fit1 = lm(relative_effort ~ weather_temperature, data = tidy_training)
+fit2 = lm(relative_effort ~ dewpoint, data = tidy_training)
+fit3 = lm(relative_effort ~ humidity, data = tidy_training)
+fit4 = lm(relative_effort ~ (elevation_gain + wind_speed)^3, data = tidy_training)
+fit5 = lm(relative_effort ~ (weather_temperature + dewpoint + humidity)^4, data = tidy_training)</code></pre>
+</div>
+<div id="cross-validation-relative-effort" class="section level3">
+<h3>Cross-Validation: Relative Effort</h3>
+<p>We followed the same cross validation process as above.</p>
+<pre class="r"><code>cv_df = 
+  crossv_mc(tidy_training, 100)
+
+cv_df = cv_df %&gt;% 
+  mutate(
+    mod1 = map(.x = train, ~lm(relative_effort ~ weather_temperature, data = .x)), 
+    mod2 = map(.x = train, ~lm(relative_effort ~ dewpoint, data = .x)), 
+    mod3 = map(.x = train, ~lm(relative_effort ~ humidity, data = .x)), 
+    mod4 = map(.x = train, ~lm(relative_effort ~ (elevation_gain + wind_speed)^3, data = .x)),
+    mod5 = map(.x = train, ~lm(relative_effort ~ (weather_temperature + dewpoint + humidity)^4, data = .x))) %&gt;% 
+  mutate(
+    rmse_mod1 = map2_dbl(.x = mod1, .y = test, ~rmse(model = .x, data = .y)), 
+    rmse_mod2 = map2_dbl(.x = mod2, .y = test, ~rmse(model = .x, data = .y)), 
+    rmse_mod3 = map2_dbl(.x = mod3, .y = test, ~rmse(model = .x, data = .y)),
+    rmse_mod4 = map2_dbl(.x = mod4, .y = test, ~rmse(model = .x, data = .y)),
+    rmse_mod5 = map2_dbl(.x = mod5, .y = test, ~rmse(model = .x, data = .y)))
+
+cv_df %&gt;% 
+  select(starts_with(&quot;rmse&quot;)) %&gt;% 
+  pivot_longer(
+    everything(), 
+    names_to = &quot;model&quot;, 
+    values_to = &quot;rmse&quot;, 
+    names_prefix = &quot;rmse_&quot;) %&gt;% 
+  ggplot(aes(x = model, y = rmse, color = c(&quot;#FFA500&quot;))) +
+  geom_boxplot() + 
+  labs(
+    title = &quot;Root Mean Squared Errors Distributions for Emma&#39;s Relative Effort&quot;, 
+    x = &quot;Fitted Model&quot;, 
+    y = &quot;RMSE&quot;)  + 
+  theme(axis.line = element_line(color = &quot;grey&quot;), 
+        panel.background = element_blank(), 
+        legend.position = &quot;none&quot;, 
+        panel.grid.major = element_line(color = &quot;light grey&quot;, linetype = &quot;dashed&quot;),
+        plot.title = element_text(hjust = 0.5)) +
+  scale_x_discrete(labels = c(&quot;mod1&quot; = &quot;Temperature Model&quot;, 
+                              &quot;mod2&quot; = &quot;Dewpoint Model&quot;, 
+                              &quot;mod3&quot; = &quot;Humidity Model&quot;,
+                              &quot;mod4&quot; = &quot;Elevation, Wind, \n Interactions&quot;,
+                              &quot;mod5&quot; = &quot;Temperature, Dewpoint, \n Humidity, Interactions&quot;))</code></pre>
+<p><img src="models_rel_effort_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<pre class="r"><code>summary(fit4)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = relative_effort ~ (elevation_gain + wind_speed)^3, 
+##     data = tidy_training)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -163.63  -35.76  -10.56   21.26  203.10 
+## 
+## Coefficients:
+##                            Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)                42.83045   21.76527   1.968   0.0525 .  
+## elevation_gain              1.06897    0.25240   4.235 5.99e-05 ***
+## wind_speed                -15.86500    7.77148  -2.041   0.0445 *  
+## elevation_gain:wind_speed   0.19942    0.07847   2.541   0.0130 *  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 62.73 on 81 degrees of freedom
+##   (23 observations deleted due to missingness)
+## Multiple R-squared:  0.6311, Adjusted R-squared:  0.6175 
+## F-statistic: 46.19 on 3 and 81 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>Based on the distributions depicted above, we can conclude that the
+model with elevation, wind, and interactions is able to generate better
+predictions than the other models with environmental factors. The
+p-value for this model is &lt; 2.2 e-16. As it is below the significance
+level, we can conclude that this model is a good predictor for average
+speed.</p>
 </div>
 
 
@@ -458,6 +561,11 @@ $(document).ready(function () {
 </script>
 
 <!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
 
 <script>
 $(document).ready(function ()  {

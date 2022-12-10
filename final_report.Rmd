@@ -38,13 +38,6 @@ For the purposes of this project, we will be answering the following questions:
 
 In preparation for data analysis, we will load the following libraries: 
 
-* `tidyverse`
-* `FITfileR`
-* `dplyr`
-* `patchwork`
-* `leaflet`
-* `modelr`
-
 ```{r, load packages, warning = FALSE, message = FALSE}
 library(tidyverse)
 library(FITfileR)
@@ -56,7 +49,7 @@ library(modelr)
 
 Data was collected using the Garmin Forerunner 245 activity watch from July 23, 2020 to November 6, 2022. Collected data was uploaded to Strava.com after each activity. After granting permission, personal data was downloaded from Strava.com. Summary data for each activity post was saved in the form of a `.csv` file (imported using `tidyverse`) and per-second data for each activity was compiled and saved in a `.fit` file (imported using `FITfileR`). 
 
-### Importing & Describing Raw Data
+### *Importing & Describing Raw Data*
 
 First, we imported the summary-level data of all of Emma's training runs from July 23, 2020 to November 6, 2022 using the `read_csv` function.  
 
@@ -69,15 +62,16 @@ training_raw <- read_csv("activities/activities.csv") %>%
 skimr::skim(training_raw)
 ```
 
-The raw data contains __`r training_raw %>% nrow()` observations__ and __`r training_raw %>% ncol()` variables__. Variables include data regarding activity date and type, trail/route information, equipment use, physical responses to training (heart rate, cadence, etc.), and weather. As is, these data were not tidy... Let's tidy!
 
-### Data Cleaning
+The raw data contains blah blah
 
-After importing, the data frame was then cleaned to include activities from the start of marathon training (April 4, 2022) to the day of the New York City Marathon (November 6, 2022). The data was filtered to only include observations from `activity_type` that were classified as 'Run'. We selected 22 relevant variables (summarized below). 
+### *Data Cleaning*
 
-Due to Emma's marathon training beginning April 4th, 2022, the `activity_id` was used in order to filter any training prior to this. Following this, the variable `activity_date` was separated into two variables: the date on which the run occurred (`date`) as well as the time when the run began (`time`). The `elapsed_time_6` variable was converted from seconds to minutes (`elapsed_time_min`). In addition to this, the variables names for `distance_7`, `max_heart_rate_8`, and `relative_effort_9` were changed to `distance_km`, `max_heart_rate`, and `relative_effort.`
+After importing, the data frame was then cleaned to include activities from the start of marathon training (April 4, 2022) to the day of the New York City Marathon (November 6, 2022). The data was filtered to only include observations from 'activity_type' that were classified as 'Run'. From this, the following 22 variables were selected to be included in this data set: activity_id, activity_date, activity_name, activity_description, elapsed_time_6, distance_7, max_heart_rate_8, relative_effort_9, max_speed, average_speed, elevation_gain, elevation_loss, max_grade, average_grade, max_cadence, average_cadence, average_heart_rate, calories, weather_temperature, dewpoint, humidity,and wind_speed. 
 
-A new data frame, `activities_summaries` was created in order to include the written accounts from each of Emma's runs, including variables `activity_name` and `activity_description`.
+Due to Emma's marathon training beginning April 4th, 2022, the 'activity_id' was used in order to filter any training prior to this. Following this, the variable 'activity_date' was separated into two variables:the date on which the run occurred ('date') as well as the time when the run began ('time'). The 'elapsed_time_6' variable was converted from seconds to minutes ('elapsed_time_min'). In addition to this, the variables names for distance_7, max_heart_rate_8, and relative_effort_9 were changed to distance_km, max_heart_rate, and relative_effort.
+
+A new data frame, 'activities_summaries' was created in order to include the written accounts from each of Emma's runs, including variables 'activity_name' and 'activity_description'.
 
 ```{r, warning = FALSE, message = FALSE}
 training_summary = 
@@ -115,31 +109,36 @@ The final cleaned data set, 'tidy_training', included __`r tidy_training %>% nro
 * `activity_id`: Unique activity identifier
 * `date`: Date of activity (YYYY-MM-DD)
 * `time`: Time of activity
-* `distance_km`: Distance ran (km), mean = `r mean(tidy_training$distance_km)`, range
-* `elapsed_time_min`: Time spent running in minutes, mean = `r mean(tidy_training$elapsed_time_min)`
-* `max_speed`: Maximum running speed (meters/second), mean = `r mean(tidy_training$max_speed)`
-* `average_speed`: Average speed (meters/second) during the activity, mean = `r mean(tidy_training$average_speed)`
-* `max_heart_rate`: Maximum heart rate (beats per minute) during the activity, mean = `r mean(tidy_training$max_heart_rate)`
-* `average_heart_rate`: Average heart rate during the activity, mean = `r mean(tidy_training$average_heart_rate)`
-* `relative_effort`: Relative effort calculated using heart rate data, mean = `r mean(tidy_training$relative_effort)`
-* `elevation_gain`: Elevation gained during the activity, mean = `r mean(tidy_training$elevation_gain)`
-* `elevation_loss`: Elevation lost during the activity, mean = `r mean(tidy_training$elevation_loss, na.rm = TRUE)`
-* `max_grade`: Maximum grade during the activity, mean = `r mean(tidy_training$max_grade)`
-* `average_grade`: Average grade during the activity, mean = `r mean(tidy_training$average_grade)`
-* `max_cadence`: Maximum cadence (steps per minute) during the activity, mean = `r mean(tidy_training$max_cadence)`
-* `average_cadence`: Average cadence (steps per minute) during the activity, mean = `r mean(tidy_training$average_cadence)`
-* `calories`: Calories burned during the activity, mean = `r mean(tidy_training$calories)`
-* `weather_temperature`: Temperature (Celsius) during the activity, mean = `r mean(tidy_training$max_speed)`
-* `dewpoint`: Dew point during the activity, mean = `r mean(tidy_training$dewpoint, na.rm = TRUE)`
-* `humidity`: Humidity (%) during the activity, mean = `r mean(tidy_training$humidity, na.rm = TRUE)`
-* `wind_speed`: Wind speed in meters per second during the activity, mean = `r mean(tidy_training$wind_speed, na.rm = TRUE)`
+* `distance_km`: Distance ran in km, mean = `r tidy_training %>% mean(distance_km, na.omit())`, range
+* `elapsed_time_min`: Time spent running in minutes, mean = `r tidy_training %>% mean(elapsed_time_min)`
+* `max_speed`: Maximum running pace minutes/km, mean = `r tidy_training %>% mean(max_speed)`
+* `average_speed`:
+* `max_heart_rate`:
+* `average_heart_rate`:
+* `relative_effort`:
+* `elevation_gain`:
+* `elevation_loss`: 
+* `max_grade`:
+* `average_grade`:
+* `max_cadence`:
+* `average_cadence`:
+* `calories`:
+* `weather_temperature`:
+* `dewpoint`:
+* `humidity`:
+* `wind_speed`:
 
 
 ## Exploratory Analysis
 
-To first visualize Emma's training schedule, we created a weekly mileage plot illustrating her mileage (km) ran over her training period. We then looked to investigate the optimal running length for her training sessions using a density plot, as well as investigating the relationship between temperature and average speed, average heart rate, and relative effort. We then investigated the relationship between humidity and average speed, average heart rate, and relative effort. Finally, we plotted Emma's NYCM racing path throughout NYC, including average speed, heart rate, cadence, and altitude for each mile during the race. 
+* Mileage over time (Intro) - Individual monthly or weekly mileage
+* Rounded mileage to closest mile, density plot of how many times you ran a certain mileage or violin 
+* Temperature vs average speed/average heart rate/relative effort (all of these)
+ -- * Elevation vs average speed/relative effort 
+* Mapping running trails (plotly/gis(?)) - only marathon route, map cadence/heart rate
+* Predict mph in marathon using temperature, humidity, relative effort, etc. 
 
-Note: data only includes Emma's logged activities - rest days were not included. 
+Side note: Rest days are not in strava data - create data set with all dates. we make a variable that is yes/no for rest days.
 
 ### Mileage Over Time
 
@@ -166,7 +165,7 @@ tidy_training %>%
         plot.title = element_text(hjust = 0.5))
 ```
 
-Emma's mileage overtime gradually increased throughout her training period, peaking at Week 20 where she ran 70.28 km over the course of the week. Weeks 21-25 demonstrate a steep drop in weekly mileage. This was due to Emma's illnesses and injuries, making her unable to run. The plot above demonstrates Emma's ramp up in training mileage in preparation for the NYCM.
+Emma's mileage overtime gradually increased throughout her training period, peaking at Week 20 where she ran 70.28 km over the course of the week. Weeks 21-25 demonstrate a steep drop in weekly mileage. This was due to XXX. The plot above demonstrates Emma's ramp up in training mileage in preparation for the NYCM.
 
 ### Mileage Density Plot
 
@@ -187,9 +186,12 @@ tidy_training %>%
         plot.title = element_text(hjust = 0.5))
 ```
 
-The density plot above illustrates the mileage at which Emma run's most often during her training period. The plot peaks at a distance of approximately 7km, indicating that 7km is the length of most of Emma's runs during her training period.
+The density plot above illustrates the mileage at which Emma run's most often during her training period. The plot peaks at a distance of approximately 7km, indicating that 7km is the length of most of Emma's runs during heer training period.
 
-### Temperature vs. Average Speed
+### Choose Your Graph (Drop down list of Y and X)
+Temperature vs average speed/average heart rate/relative effort (all of these)
+
+#### Temperature vs. Average Speed
 
 ```{r, warning = FALSE, message = FALSE, error = FALSE}
 tidy_training %>% 
@@ -197,9 +199,9 @@ tidy_training %>%
   geom_point(color = c("#FFA500")) +
   geom_smooth(se = FALSE, color = "dark grey") + 
     labs(
-    title = "Temperature (C) vs. Emma's Average Speed (m/s)",
+    title = "Temperature (C) vs. Emma's Average Speed",
     x = "Temperature (C)", 
-    y = "Average Speed (m/s)") + 
+    y = "Average Speed") + 
   scale_x_continuous(breaks = scales::pretty_breaks(n = 5)) + 
   scale_y_continuous(breaks = scales::pretty_breaks(n = 5)) +
   theme(axis.line = element_line(color = "grey"), 
@@ -211,7 +213,7 @@ tidy_training %>%
 
 Although we expected Emma's speed to be inversely proportional to the weather temperature, Emma's average speed stayed approximately steady throughout the training period, with a speed of 3 meters per second (10.8 km per hour), while temperature varied between 6.58 degrees Celsius and 27.89 degrees Celsius.
 
-### Performance vs. Temperature
+#### Performance vs. Temperature
 
 ```{r, warning = FALSE, message = FALSE, error = FALSE}
 temp_avg_speed = 
@@ -221,7 +223,7 @@ temp_avg_speed =
   geom_smooth(se = FALSE, color = "dark grey") + 
     labs(
     x = "Temperature (C)", 
-    y = "Average Speed (m/s)") + 
+    y = "Average Speed") + 
   scale_x_continuous(breaks = scales::pretty_breaks(n = 5)) + 
   scale_y_continuous(breaks = scales::pretty_breaks(n = 5)) +
   theme(axis.line = element_line(color = "grey"), 
@@ -229,7 +231,7 @@ temp_avg_speed =
         legend.position = "none", 
         panel.grid.major = element_line(color = "light grey", linetype = "dashed"),
         plot.title = element_text(hjust = 0.5)) + 
-  ggtitle("Temperature (C) vs. Emma's Average Speed (m/s)")
+  ggtitle("Temperature (C) vs. Emma's Average Speed")
 
 temp_avg_hrt = 
   tidy_training %>% 
@@ -275,7 +277,7 @@ Additionally, although we hypothesized that external temperature would be invers
 
 Finally, although we hypothesized that external temperature would be inversely related to Emma's relative effort, the plot on the bottom right demonstrates the relationship between external temperature and Emma's relative effort during her training period. The variable relative effort is calculated by Strava and based off of her heart rate during the training session. The plot demonstrates that while temperature varied between 6.58 degrees Celsius and 27.89 degrees Celsius, Emma's relative effort averaged around 150.
 
-### Performance vs. Humidity
+#### Performance vs. Humidity
 
 ```{r, warning = FALSE, message = FALSE, error = FALSE}
 humid_avg_speed = 
@@ -285,7 +287,7 @@ humid_avg_speed =
   geom_smooth(se = FALSE, color = "dark grey") + 
     labs(
     x = "Humidity (%)", 
-    y = "Average Speed (m/s)") + 
+    y = "Average Speed") + 
   scale_x_continuous(breaks = scales::pretty_breaks(n = 5)) + 
   scale_y_continuous(breaks = scales::pretty_breaks(n = 5)) +
   theme(axis.line = element_line(color = "grey"), 
@@ -293,7 +295,7 @@ humid_avg_speed =
         legend.position = "none", 
         panel.grid.major = element_line(color = "light grey", linetype = "dashed"),
         plot.title = element_text(hjust = 0.5)) + 
-  ggtitle("Humidity (%) vs. Emma's Average Speed (m/s)")
+  ggtitle("Humidity (%) vs. Emma's Average Speed")
 
 humid_avg_hrt = 
   tidy_training %>% 
@@ -337,9 +339,10 @@ Although we expected Emma's speed to be inversely related to the external humidi
 
 Additionally, although we hypothesized that external humidity would be inversely related to Emma's average heart rate, the plot on the bottom left demonstrates the relationship between external humidity and Emma's average heart rate. While humidity varied between 32% and 96%, Emma's heart rate averaged around 155.
 
-Finally, although we hypothesized that external humidity would be inversely related to Emma's relative effort, the plot on the bottom right demonstrates the relationship between external humidity and Emma's relative effort during her training period. The variable relative effort is calculated by Strava and based off of her heart rate during the training session. The plot demonstrates that while humidity varied between 32% and 96%, Emma's relative effort averaged around 150.
+Finally, although we hypothesized that external humidity would be inversely related to Emma's relatie effort, the plot on the bottom right demonstrates the relationship between external humidity and Emma's relative effort during her training period. The variable relative effort is calculated by Strava and based off of her heart rate during the training session. The plot demonstrates that while humidity varied between 32% and 96%, Emma's relative effort averaged around 150.
 
-### Interactive Marathon Route Map
+#### Interactive Marathon Route Map
+NOTE: Install Leaflet Prior to Running
 
 Loading and Cleaning the Data
 ```{r, warning = FALSE, message = FALSE, error = FALSE}
@@ -378,29 +381,36 @@ mutate(group = case_when(
     between(distance_m, 24, 24.9999) ~ "24",
     between(distance_m, 25, 25.9999) ~ "25",
     between(distance_m, 26, 26.9999) ~ "26-Finish")) 
+```
 
-#Recode
+Recode
+
+```{r, warning = FALSE, message = FALSE, error = FALSE}
 marathon_geo =
   marathon_day %>% 
   mutate(
     latitude  = position_lat,
     longitude = position_long) %>% 
   select(-position_lat, -position_long)
+```
 
+```{r, warning = FALSE, message = FALSE, error = FALSE}
 marathon_speed =
 marathon_geo %>% 
   group_by(group) %>% 
   mutate(
-    speed_mile = 
+    speed_km = 
   enhanced_speed*2.237)
+```
 
-#Aggregate Data
+Aggregate Data
+```{r, warning = FALSE, message = FALSE, error = FALSE}
 agg = aggregate(marathon_speed,
                 by = list(marathon_geo$group),
                 FUN = mean)
 ```
 
-In order to display Emma’s progress throughout the NYC Marathon an interactive map was created. Utilizing data from the ‘marathon_day’ data set, cleaning began with converting the distance measurement from kilometers to miles, in order to best display the race. From this, each observation was grouped by mileage (1-26), with a Start (Mile 0) and Finish (Mile 26.6) observation being added as well. Variables ‘position_longitude’ and ‘position_latitude’ were recoded to ‘longitude’ and ‘latitude’ within the data set. A new data set ‘marathon_speed’ was generated in order to group all observations based on mile as well as convert speed from its initial unit of meters per second to miles per hour. The data was then aggregated in order to create averages for each of Emma’s mile statistics such as Speed, Heart Rate, Cadence, as well as Altitude. Leaflet was then used to display all mile markers along the 26.6 Mile route, in addition to a pop-up that includes Emma’s summary statistics for each running stint of the marathon.
+Aggregate Leaflet Plot
 
 ```{r, warning = FALSE, message = FALSE, error = FALSE}
 leaflet() %>% 
@@ -413,39 +423,29 @@ leaflet() %>%
              color = "orange",
              stroke = TRUE, fillOpacity = 0.75,
              popup = ~paste("Mile:", Group.1,
-                            "<br>Speed:", speed_mile,
+                            "<br>Speed:", speed_km,
                             "<br>HR:", heart_rate,
                              "<br>Cadence:", cadence,
                             "<br>Altitude:", enhanced_altitude)) %>% 
   addProviderTiles(providers$CartoDB.Positron)
 ```
 
-The leaflet plot above demonstrates Emma's NYCM racing path. Each marker indicates the mile number and average speed (miles/hour), heart rate, cadence, and altitude for that mile. As a note, Strava failed to record information for Mile 3, and is therefore not included in the leaflet above. 
+The leaflet plot above demonstrates Emma's NYCM racing path. Each marker indicates the mile number and average speed (meters/sec), heart rate, cadence, and altitude for that mile. As a note, Strava failed to record information for Mile 3, and is therefore not included in the leaflet above. 
 
 ## Additional Analysis
 
+### Performance Regression Models
 
-### Speed Regression Models
-
-Based on Emma's recount of personal experience, she perceives environmental factors to be significant predictors of her performance. More specifically, weather conditions such as temperature, humidity, dewpoint, and windspeed affect Emma's perceived running experience. Additionally, due to the irregular environmental conditions on race day, we generated several models to investigate which environmental factors would be best predictors for Emma's performance. We hypothesize that Emma's average speed is dependent on temperature. To test this hypothesis, we built the following models: 
-
-* Average speed vs temperature 
-* Average speed vs dewpoint
-* Average speed vs humidity
-* Average speed vs elevation gain and wind speed, and all interactions
-* Average speed vs temperature and dewpoint, and all interactions
 
 ```{r, warning = FALSE, message = FALSE, error = FALSE}
-fit1 = lm(average_speed ~ weather_temperature, data = tidy_training)
-fit2 = lm(average_speed ~ dewpoint, data = tidy_training)
-fit3 = lm(average_speed ~ humidity, data = tidy_training)
-fit4 = lm(average_speed ~ (elevation_gain + wind_speed)^3, data = tidy_training)
-fit5 = lm(average_speed ~ (weather_temperature + dewpoint)^3, data = tidy_training)
+speed_temp = lm(average_speed ~ weather_temperature, data = tidy_training)
+
+speed_humidity = lm(average_speed ~ humidity, data = tidy_training)
+
+speed_temp_humidity_int = lm(average_speed ~ (weather_temperature + humidity)^3, data = tidy_training)
 ```
 
-### Cross-Validation: Speed
-
-We can now perform a comparison between the five models in terms of cross-validated prediction error. To do this, we first create a cross-validation data frame `cv_df`. Contained within `cv_df` is 2 side-by-side list columns with the testing and training data split pairs, with a corresponding ID number for each pair. Since we are able to apply resample objects directly into `lm` functions, we can skip the extra step of converting the testing and training data into tibbles. Next, we apply the `map` function to map each regression model to the training data. Finally, we can compute the root mean squared errors (RMSEs) for each model by applying the `map2_dbl` function to the testing data. 
+### Cross-Validation
 
 ```{r, warning = FALSE, message = FALSE, error = FALSE}
 cv_df = 
@@ -453,18 +453,16 @@ cv_df =
 
 cv_df = cv_df %>% 
   mutate(
-    mod1 = map(.x = train, ~lm(average_speed ~ weather_temperature, data = .x)), 
-    mod2 = map(.x = train, ~lm(average_speed ~ dewpoint, data = .x)), 
-    mod3 = map(.x = train, ~lm(average_speed ~ humidity, data = .x)), 
-    mod4 = map(.x = train, ~lm(average_speed ~ (elevation_gain + wind_speed)^3, data = .x)),
-    mod5 = map(.x = train, ~lm(average_speed ~ (weather_temperature + dewpoint)^3, data = .x))) %>% 
+    speed_temp_mod      = map(.x = train, ~lm(average_speed ~ weather_temperature, data = .x)), 
+    speed_humidity_mod   = map(.x = train, ~lm(average_speed ~ humidity, data = .x)), 
+    speed_temp_humidity_int_mod = map(.x = train, ~lm(average_speed ~ (weather_temperature + humidity)^3, data = .x))) %>% 
   mutate(
-    rmse_mod1 = map2_dbl(.x = mod1, .y = test, ~rmse(model = .x, data = .y)), 
-    rmse_mod2 = map2_dbl(.x = mod2, .y = test, ~rmse(model = .x, data = .y)), 
-    rmse_mod3 = map2_dbl(.x = mod3, .y = test, ~rmse(model = .x, data = .y)),
-    rmse_mod4 = map2_dbl(.x = mod4, .y = test, ~rmse(model = .x, data = .y)),
-    rmse_mod5 = map2_dbl(.x = mod5, .y = test, ~rmse(model = .x, data = .y)))
+    rmse_speed_temp = map2_dbl(.x = speed_temp_mod, .y = test, ~rmse(model = .x, data = .y)), 
+    rmse_speed_humidity = map2_dbl(.x = speed_humidity_mod, .y = test, ~rmse(model = .x, data = .y)), 
+    rmse_speed_temp_humidity_int = map2_dbl(.x = speed_temp_humidity_int_mod, .y = test, ~rmse(model = .x, data = .y)))
+```
 
+```{r, warning = FALSE, message = FALSE, error = FALSE}
 cv_df %>% 
   select(starts_with("rmse")) %>% 
   pivot_longer(
@@ -482,102 +480,10 @@ cv_df %>%
         panel.background = element_blank(), 
         legend.position = "none", 
         panel.grid.major = element_line(color = "light grey", linetype = "dashed"),
-        plot.title = element_text(hjust = 0.5)) +
-  scale_x_discrete(labels = c("mod1" = "Temperature Model", 
-                              "mod2" = "Dewpoint Model", 
-                              "mod3" = "Humidity Model",
-                              "mod4" = "Elevation, Wind, \n Interactions",
-                              "mod5" = "Temperature, Dewpoint, \n Interactions"))
-  
-summary(fit1) 
+        plot.title = element_text(hjust = 0.5)) + 
+  scale_x_discrete(labels = c("speed_humidity" = "Humidity Model", 
+                              "speed_temp" = "Temperature Model", 
+                              "speed_temp_humidity_int" = "Temperature, Humidity, Interaction Model"))
 ```
-
-Based on the distributions depicted above, we can conclude that the model with temperature is able to generate better predictions than the other models with environmental factors. The p-value for this model is 0.03101. As it is below the significance level of 0.05, we can conclude that this model is a good predictor for average speed. 
-
-
-### Relative Effort Regression Models
-
-Additionally, we hypothesize that Emma's relative effort is dependent on temperature. To test this hypothesis, we built the following models: 
-
-* Relative effort vs temperature 
-* Relative effort vs dewpoint
-* Relative effort vs humidity
-* Relative effort vs elevation gain and wind speed, and all interactions
-* Relative effort vs temperature and dewpoint, and all interactions
-
-```{r, warning = FALSE, message = FALSE, error = FALSE}
-fit1 = lm(relative_effort ~ weather_temperature, data = tidy_training)
-fit2 = lm(relative_effort ~ dewpoint, data = tidy_training)
-fit3 = lm(relative_effort ~ humidity, data = tidy_training)
-fit4 = lm(relative_effort ~ (elevation_gain + wind_speed)^3, data = tidy_training)
-fit5 = lm(relative_effort ~ (weather_temperature + dewpoint + humidity)^4, data = tidy_training)
-```
-
-
-### Cross-Validation: Relative Effort
-
-We followed the same cross validation process as above. 
-
-```{r, warning = FALSE, message = FALSE, error = FALSE}
-cv_df = 
-  crossv_mc(tidy_training, 100)
-
-cv_df = cv_df %>% 
-  mutate(
-    mod1 = map(.x = train, ~lm(relative_effort ~ weather_temperature, data = .x)), 
-    mod2 = map(.x = train, ~lm(relative_effort ~ dewpoint, data = .x)), 
-    mod3 = map(.x = train, ~lm(relative_effort ~ humidity, data = .x)), 
-    mod4 = map(.x = train, ~lm(relative_effort ~ (elevation_gain + wind_speed)^3, data = .x)),
-    mod5 = map(.x = train, ~lm(relative_effort ~ (weather_temperature + dewpoint + humidity)^4, data = .x))) %>% 
-  mutate(
-    rmse_mod1 = map2_dbl(.x = mod1, .y = test, ~rmse(model = .x, data = .y)), 
-    rmse_mod2 = map2_dbl(.x = mod2, .y = test, ~rmse(model = .x, data = .y)), 
-    rmse_mod3 = map2_dbl(.x = mod3, .y = test, ~rmse(model = .x, data = .y)),
-    rmse_mod4 = map2_dbl(.x = mod4, .y = test, ~rmse(model = .x, data = .y)),
-    rmse_mod5 = map2_dbl(.x = mod5, .y = test, ~rmse(model = .x, data = .y)))
-
-cv_df %>% 
-  select(starts_with("rmse")) %>% 
-  pivot_longer(
-    everything(), 
-    names_to = "model", 
-    values_to = "rmse", 
-    names_prefix = "rmse_") %>% 
-  ggplot(aes(x = model, y = rmse, color = c("#FFA500"))) +
-  geom_boxplot() + 
-  labs(
-    title = "Root Mean Squared Errors Distributions for Emma's Relative Effort", 
-    x = "Fitted Model", 
-    y = "RMSE")  + 
-  theme(axis.line = element_line(color = "grey"), 
-        panel.background = element_blank(), 
-        legend.position = "none", 
-        panel.grid.major = element_line(color = "light grey", linetype = "dashed"),
-        plot.title = element_text(hjust = 0.5)) +
-  scale_x_discrete(labels = c("mod1" = "Temperature Model", 
-                              "mod2" = "Dewpoint Model", 
-                              "mod3" = "Humidity Model",
-                              "mod4" = "Elevation, Wind, \n Interactions",
-                              "mod5" = "Temperature, Dewpoint, \n Humidity, Interactions"))
-
-summary(fit4)
-```
-
-Based on the distributions depicted above, we can conclude that the model with elevation, wind, and interactions is able to generate better predictions than the other models with environmental factors. The p-value for this model is < 2.2 e-16. As it is below the significance level, we can conclude that this model is a good predictor for average speed. 
-
 
 ## Discussion
-
-Our analysis sought to analyze the impact of external factors, such as temperature, wind, elevation, etc., on Emma's speed and performance during the NYC Marathon, while also considering how training changed over time in order to improve her training for the next marathon.
-
-To investigate the impact of these external factors, we created a series of plots demonstrating the relationship between external temperature and humidity with Emma’s average speed, heart rate, and relative effort. We expected external temperature and humidity to be inversely related with Emma’s average speed, heart rate, and relative effort. However, the plots created demonstrated that while temperature varied between 6.58˚C to 27.89˚C, Emma’s average speed, heart rate, and relative effort remained relatively stable. Emma’s average speed was approximately 3 meters/second throughout her training period. Her average heart rate remained around 155 throughout her training period, and her relative effort remained around 150. Similarly, the plots created demonstrated that while humidity varied between 325 and 96%, Emma’s average speed, heart rate, and relative effort remained relatively stable. Although we had hypothesized that external temperature and humidity would have a greater impact on Emma’s performance throughout her training period, our analysis demonstrated otherwise, indicating that Emma’s body is more resilient to external factors than expected. 
-
-Additionally, from our prediction models, we can conclude that temperature is a good predictor for average speed, with a p-value of 0.03101 and that elevation, wind, and is interactions are a good predictor for relative effort, with a p-value of <2.2 e-16. If Emma integrates into her training varying temperature conditions in addition to different elevation changes, this would help better prepare her for her next marathon. 
-
-In preparation for Emma's next marathon, this data analysis reveals that it would be most effective to consider temperature and elevation of her next marathon's race course. 
-
-Go Emma!!!
-
-
-
-
