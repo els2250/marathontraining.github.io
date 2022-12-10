@@ -464,6 +464,14 @@ factors good predictors for her performance?</li>
 <h2>Data</h2>
 <p>In preparation for data analysis, we will load the following
 libraries:</p>
+<ul>
+<li><code>tidyverse</code></li>
+<li><code>FITfileR</code></li>
+<li><code>dplyr</code></li>
+<li><code>patchwork</code></li>
+<li><code>leaflet</code></li>
+<li><code>modelr</code></li>
+</ul>
 <pre class="r"><code>library(tidyverse)
 library(FITfileR)
 library(dplyr)
@@ -479,7 +487,7 @@ saved in the form of a <code>.csv</code> file (imported using
 compiled and saved in a <code>.fit</code> file (imported using
 <code>FITfileR</code>).</p>
 <div id="importing-describing-raw-data" class="section level3">
-<h3><em>Importing &amp; Describing Raw Data</em></h3>
+<h3>Importing &amp; Describing Raw Data</h3>
 <p>First, we imported the summary-level data of all of Emma’s training
 runs from July 23, 2020 to November 6, 2022 using the
 <code>read_csv</code> function.</p>
@@ -567,7 +575,7 @@ rate data, mean = 95.462963</li>
 <li><code>elevation_gain</code>: Elevation gained during the activity,
 mean = 58.0976234</li>
 <li><code>elevation_loss</code>: Elevation lost during the activity,
-mean = NA</li>
+mean = 469.7619048</li>
 <li><code>max_grade</code>: Maximum grade during the activity, mean =
 24.2052355</li>
 <li><code>average_grade</code>: Average grade during the activity, mean
@@ -580,30 +588,29 @@ during the activity, mean = 79.7518814</li>
 454.2592593</li>
 <li><code>weather_temperature</code>: Temperature (Celsius) during the
 activity, mean = 7.4808794</li>
-<li><code>dewpoint</code>: Dew point during the activity, mean = NA</li>
+<li><code>dewpoint</code>: Dew point during the activity, mean =
+13.614</li>
 <li><code>humidity</code>: Humidity (%) during the activity, mean =
-NA</li>
+0.7151765</li>
 <li><code>wind_speed</code>: Wind speed in meters per second during the
-activity, mean = NA</li>
+activity, mean = 2.1948235</li>
 </ul>
 </div>
 </div>
 <div id="exploratory-analysis" class="section level2">
 <h2>Exploratory Analysis</h2>
-<ul>
-<li>Mileage over time (Intro) - Individual monthly or weekly
-mileage</li>
-<li>Rounded mileage to closest mile, density plot of how many times you
-ran a certain mileage or violin</li>
-<li>Temperature vs average speed/average heart rate/relative effort (all
-of these) – * Elevation vs average speed/relative effort</li>
-<li>Mapping running trails (plotly/gis(?)) - only marathon route, map
-cadence/heart rate</li>
-<li>Predict mph in marathon using temperature, humidity, relative
-effort, etc.</li>
-</ul>
-<p>Side note: Rest days are not in strava data - create data set with
-all dates. we make a variable that is yes/no for rest days.</p>
+<p>To first visualize Emma’s training schedule, we created a weekly
+mileage plot illustrating her mileage (km) ran over her training period.
+We then looked to investigate the optimal running length for her
+training sessions using a density plot, as well as investigating the
+relationship between temperature and average speed, average heart rate,
+and relative effort. We then investigated the relationship between
+humidity and average speed, average heart rate, and relative effort.
+Finally, we plotted Emma’s NYCM racing path throughout NYC, including
+average speed, heart rate, cadence, and altitude for each mile during
+the race.</p>
+<p>Note: data only includes Emma’s logged activities - rest days were
+not included.</p>
 <div id="mileage-over-time" class="section level3">
 <h3>Mileage Over Time</h3>
 <pre class="r"><code>tidy_training = tidy_training %&gt;% 
@@ -824,8 +831,8 @@ bottom left demonstrates the relationship between external humidity and
 Emma’s average heart rate. While humidity varied between 32% and 96%,
 Emma’s heart rate averaged around 155.</p>
 <p>Finally, although we hypothesized that external humidity would be
-inversely related to Emma’s relatie effort, the plot on the bottom right
-demonstrates the relationship between external humidity and Emma’s
+inversely related to Emma’s relative effort, the plot on the bottom
+right demonstrates the relationship between external humidity and Emma’s
 relative effort during her training period. The variable relative effort
 is calculated by Strava and based off of her heart rate during the
 training session. The plot demonstrates that while humidity varied
@@ -833,7 +840,6 @@ between 32% and 96%, Emma’s relative effort averaged around 150.</p>
 </div>
 <div id="interactive-marathon-route-map" class="section level3">
 <h3>Interactive Marathon Route Map</h3>
-<p>NOTE: Install Leaflet Prior to Running</p>
 <p>Loading and Cleaning the Data</p>
 <pre class="r"><code>marathon_day &lt;- read_csv(&quot;activities/marathon_day.csv&quot;)
 
@@ -869,25 +875,42 @@ mutate(group = case_when(
     between(distance_m, 23, 23.9999) ~ &quot;23&quot;,
     between(distance_m, 24, 24.9999) ~ &quot;24&quot;,
     between(distance_m, 25, 25.9999) ~ &quot;25&quot;,
-    between(distance_m, 26, 26.9999) ~ &quot;26-Finish&quot;)) </code></pre>
-<p>Recode</p>
-<pre class="r"><code>marathon_geo =
+    between(distance_m, 26, 26.9999) ~ &quot;26-Finish&quot;)) 
+
+#Recode
+marathon_geo =
   marathon_day %&gt;% 
   mutate(
     latitude  = position_lat,
     longitude = position_long) %&gt;% 
-  select(-position_lat, -position_long)</code></pre>
-<pre class="r"><code>marathon_speed =
+  select(-position_lat, -position_long)
+
+marathon_speed =
 marathon_geo %&gt;% 
   group_by(group) %&gt;% 
   mutate(
-    speed_km = 
-  enhanced_speed*2.237)</code></pre>
-<p>Aggregate Data</p>
-<pre class="r"><code>agg = aggregate(marathon_speed,
+    speed_mile = 
+  enhanced_speed*2.237)
+
+#Aggregate Data
+agg = aggregate(marathon_speed,
                 by = list(marathon_geo$group),
                 FUN = mean)</code></pre>
-<p>Aggregate Leaflet Plot</p>
+<p>In order to display Emma’s progress throughout the NYC Marathon an
+interactive map was created. Utilizing data from the ‘marathon_day’ data
+set, cleaning began with converting the distance measurement from
+kilometers to miles, in order to best display the race. From this, each
+observation was grouped by mileage (1-26), with a Start (Mile 0) and
+Finish (Mile 26.6) observation being added as well. Variables
+‘position_longitude’ and ‘position_latitude’ were recoded to ‘longitude’
+and ‘latitude’ within the data set. A new data set ‘marathon_speed’ was
+generated in order to group all observations based on mile as well as
+convert speed from its initial unit of meters per second to miles per
+hour. The data was then aggregated in order to create averages for each
+of Emma’s mile statistics such as Speed, Heart Rate, Cadence, as well as
+Altitude. Leaflet was then used to display all mile markers along the
+26.6 Mile route, in addition to a pop-up that includes Emma’s summary
+statistics for each running stint of the marathon.</p>
 <pre class="r"><code>leaflet() %&gt;% 
   addTiles() %&gt;% 
   addCircleMarkers(data = agg,
@@ -898,15 +921,15 @@ marathon_geo %&gt;%
              color = &quot;orange&quot;,
              stroke = TRUE, fillOpacity = 0.75,
              popup = ~paste(&quot;Mile:&quot;, Group.1,
-                            &quot;&lt;br&gt;Speed:&quot;, speed_km,
+                            &quot;&lt;br&gt;Speed:&quot;, speed_mile,
                             &quot;&lt;br&gt;HR:&quot;, heart_rate,
                              &quot;&lt;br&gt;Cadence:&quot;, cadence,
                             &quot;&lt;br&gt;Altitude:&quot;, enhanced_altitude)) %&gt;% 
   addProviderTiles(providers$CartoDB.Positron)</code></pre>
-<div id="htmlwidget-0f07be8e751d6cec8391" style="width:672px;height:480px;" class="leaflet html-widget"></div>
-<script type="application/json" data-for="htmlwidget-0f07be8e751d6cec8391">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"https://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addCircleMarkers","args":[[40.6104348705628,40.7042159239592,40.7164656348145,40.728277819874,40.740826228118,40.7491534880795,40.7558571904419,40.7777123779879,40.7903228550433,40.8023561141454,40.6192627834549,40.8118997489457,40.8102504578455,40.8001325806757,40.7882020822061,40.7763461387941,40.766959590201,40.770384692587,null,40.6444014760309,40.6557787290627,40.6671305434582,40.6794894834151,40.6876716191673,40.6921380146503,40.6043989839213],[-74.0346232919979,-73.9608535200188,-73.9589246148317,-73.9524508345938,-73.9525773309703,-73.9450712946021,-73.9528505667326,-73.9487948260759,-73.939629788009,-73.9298666665563,-74.0288426203294,-73.928230043045,-73.9394263029525,-73.9473303446644,-73.9557053759358,-73.966941702771,-73.9756988926056,-73.9788563751305,null,-74.0148388704929,-74.0029969833497,-73.9916699058621,-73.9818277620092,-73.9710569978992,-73.9571167532644,-74.0517789316213],7,null,null,{"interactive":true,"className":"","stroke":true,"color":"orange","weight":5,"opacity":0.5,"fill":true,"fillColor":"orange","fillOpacity":0.75},null,null,["Mile: 1 <br>Speed: 7.16634034234234 <br>HR: 169.648648648649 <br>Cadence: 79.945945945946 <br>Altitude: 55.3783783783784","Mile: 10 <br>Speed: 5.91045904545455 <br>HR: 173.840909090909 <br>Cadence: 78.7045454545455 <br>Altitude: 33.7590909090909","Mile: 11 <br>Speed: 6.16624646456693 <br>HR: 177.094488188976 <br>Cadence: 82.5984251968504 <br>Altitude: 16.0708661417323","Mile: 12 <br>Speed: 6.49777232743363 <br>HR: 177.964601769911 <br>Cadence: 80.9469026548673 <br>Altitude: 18.8495575221239","Mile: 13 <br>Speed: 6.69400279464286 <br>HR: 178.732142857143 <br>Cadence: 82.5803571428571 <br>Altitude: 12.6339285714286","Mile: 14 <br>Speed: 5.6681484084507 <br>HR: 176.633802816901 <br>Cadence: 82.3943661971831 <br>Altitude: 32.8197183098592","Mile: 15 <br>Speed: 3.31547001376147 <br>HR: 139.56880733945 <br>Cadence: 79.0596330275229 <br>Altitude: 24.3201834862385","Mile: 17 <br>Speed: 6.22130553389831 <br>HR: 171.686440677966 <br>Cadence: 82.7966101694915 <br>Altitude: 42.0186440677966","Mile: 18 <br>Speed: 5.64340035384615 <br>HR: 150.307692307692 <br>Cadence: 72.3923076923077 <br>Altitude: 23.2507692307692","Mile: 19 <br>Speed: 5.27883065625 <br>HR: 145.89375 <br>Cadence: 71.54375 <br>Altitude: 24.7425","Mile: 2 <br>Speed: 6.9439558440367 <br>HR: 173 <br>Cadence: 80.8623853211009 <br>Altitude: 28.9633027522936","Mile: 20 <br>Speed: 5.93609676258993 <br>HR: 160.647482014388 <br>Cadence: 81.4244604316547 <br>Altitude: 13.6474820143885","Mile: 21 <br>Speed: 6.25834048854962 <br>HR: 159.206106870229 <br>Cadence: 81.8015267175573 <br>Altitude: 27.1435114503817","Mile: 22 <br>Speed: 5.80403946616541 <br>HR: 167.353383458647 <br>Cadence: 80.4586466165414 <br>Altitude: 46.0736842105263","Mile: 23 <br>Speed: 5.55055204511278 <br>HR: 172.233082706767 <br>Cadence: 76.6842105263158 <br>Altitude: 73.8285714285714","Mile: 24 <br>Speed: 5.43006440875912 <br>HR: 173.737226277372 <br>Cadence: 71.2116788321168 <br>Altitude: 26.043795620438","Mile: 25 <br>Speed: 5.92434019254658 <br>HR: 176.484472049689 <br>Cadence: 80.0683229813665 <br>Altitude: 7.53540372670807","Mile: 26-Finish <br>Speed: 6.85462368518519 <br>HR: 183.296296296296 <br>Cadence: 86.1481481481482 <br>Altitude: 19.3185185185185","Mile: 3 <br>Speed: NA <br>HR: 174.938053097345 <br>Cadence: 80.4070796460177 <br>Altitude: 33.7256637168142","Mile: 4 <br>Speed: 6.94028204672897 <br>HR: 175.383177570093 <br>Cadence: 80.4485981308411 <br>Altitude: 27.985046728972","Mile: 5 <br>Speed: 6.79859621052632 <br>HR: 172.69298245614 <br>Cadence: 81.3245614035088 <br>Altitude: 14.8368421052632","Mile: 6 <br>Speed: 6.84808492982456 <br>HR: 175.333333333333 <br>Cadence: 81.780701754386 <br>Altitude: 26.0666666666667","Mile: 7 <br>Speed: 6.65007464705882 <br>HR: 175.352941176471 <br>Cadence: 79.4705882352941 <br>Altitude: 22.6436974789916","Mile: 8 <br>Speed: 6.82514246280992 <br>HR: 177.280991735537 <br>Cadence: 81.7851239669422 <br>Altitude: 42.1074380165289","Mile: 9 <br>Speed: 6.75896050862069 <br>HR: 177.534482758621 <br>Cadence: 82.5948275862069 <br>Altitude: 37.3586206896552","Mile: Start <br>Speed: 6.53191371774194 <br>HR: 168.548387096774 <br>Cadence: 80.9112903225806 <br>Altitude: 68.2774193548387"],null,["1","10","11","12","13","14","15","17","18","19","2","20","21","22","23","24","25","26-Finish","3","4","5","6","7","8","9","Start"],{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addProviderTiles","args":["CartoDB.Positron",null,null,{"errorTileUrl":"","noWrap":false,"detectRetina":false}]}],"limits":{"lat":[40.6043989839213,40.8118997489457],"lng":[-74.0517789316213,-73.928230043045]}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-b9987b4c056133ea3aa0" style="width:672px;height:480px;" class="leaflet html-widget"></div>
+<script type="application/json" data-for="htmlwidget-b9987b4c056133ea3aa0">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"https://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addCircleMarkers","args":[[40.6104348705628,40.7042159239592,40.7164656348145,40.728277819874,40.740826228118,40.7491534880795,40.7558571904419,40.7777123779879,40.7903228550433,40.8023561141454,40.6192627834549,40.8118997489457,40.8102504578455,40.8001325806757,40.7882020822061,40.7763461387941,40.766959590201,40.770384692587,null,40.6444014760309,40.6557787290627,40.6671305434582,40.6794894834151,40.6876716191673,40.6921380146503,40.6043989839213],[-74.0346232919979,-73.9608535200188,-73.9589246148317,-73.9524508345938,-73.9525773309703,-73.9450712946021,-73.9528505667326,-73.9487948260759,-73.939629788009,-73.9298666665563,-74.0288426203294,-73.928230043045,-73.9394263029525,-73.9473303446644,-73.9557053759358,-73.966941702771,-73.9756988926056,-73.9788563751305,null,-74.0148388704929,-74.0029969833497,-73.9916699058621,-73.9818277620092,-73.9710569978992,-73.9571167532644,-74.0517789316213],7,null,null,{"interactive":true,"className":"","stroke":true,"color":"orange","weight":5,"opacity":0.5,"fill":true,"fillColor":"orange","fillOpacity":0.75},null,null,["Mile: 1 <br>Speed: 7.16634034234234 <br>HR: 169.648648648649 <br>Cadence: 79.945945945946 <br>Altitude: 55.3783783783784","Mile: 10 <br>Speed: 5.91045904545455 <br>HR: 173.840909090909 <br>Cadence: 78.7045454545455 <br>Altitude: 33.7590909090909","Mile: 11 <br>Speed: 6.16624646456693 <br>HR: 177.094488188976 <br>Cadence: 82.5984251968504 <br>Altitude: 16.0708661417323","Mile: 12 <br>Speed: 6.49777232743363 <br>HR: 177.964601769911 <br>Cadence: 80.9469026548673 <br>Altitude: 18.8495575221239","Mile: 13 <br>Speed: 6.69400279464286 <br>HR: 178.732142857143 <br>Cadence: 82.5803571428571 <br>Altitude: 12.6339285714286","Mile: 14 <br>Speed: 5.6681484084507 <br>HR: 176.633802816901 <br>Cadence: 82.3943661971831 <br>Altitude: 32.8197183098592","Mile: 15 <br>Speed: 3.31547001376147 <br>HR: 139.56880733945 <br>Cadence: 79.0596330275229 <br>Altitude: 24.3201834862385","Mile: 17 <br>Speed: 6.22130553389831 <br>HR: 171.686440677966 <br>Cadence: 82.7966101694915 <br>Altitude: 42.0186440677966","Mile: 18 <br>Speed: 5.64340035384615 <br>HR: 150.307692307692 <br>Cadence: 72.3923076923077 <br>Altitude: 23.2507692307692","Mile: 19 <br>Speed: 5.27883065625 <br>HR: 145.89375 <br>Cadence: 71.54375 <br>Altitude: 24.7425","Mile: 2 <br>Speed: 6.9439558440367 <br>HR: 173 <br>Cadence: 80.8623853211009 <br>Altitude: 28.9633027522936","Mile: 20 <br>Speed: 5.93609676258993 <br>HR: 160.647482014388 <br>Cadence: 81.4244604316547 <br>Altitude: 13.6474820143885","Mile: 21 <br>Speed: 6.25834048854962 <br>HR: 159.206106870229 <br>Cadence: 81.8015267175573 <br>Altitude: 27.1435114503817","Mile: 22 <br>Speed: 5.80403946616541 <br>HR: 167.353383458647 <br>Cadence: 80.4586466165414 <br>Altitude: 46.0736842105263","Mile: 23 <br>Speed: 5.55055204511278 <br>HR: 172.233082706767 <br>Cadence: 76.6842105263158 <br>Altitude: 73.8285714285714","Mile: 24 <br>Speed: 5.43006440875912 <br>HR: 173.737226277372 <br>Cadence: 71.2116788321168 <br>Altitude: 26.043795620438","Mile: 25 <br>Speed: 5.92434019254658 <br>HR: 176.484472049689 <br>Cadence: 80.0683229813665 <br>Altitude: 7.53540372670807","Mile: 26-Finish <br>Speed: 6.85462368518519 <br>HR: 183.296296296296 <br>Cadence: 86.1481481481482 <br>Altitude: 19.3185185185185","Mile: 3 <br>Speed: NA <br>HR: 174.938053097345 <br>Cadence: 80.4070796460177 <br>Altitude: 33.7256637168142","Mile: 4 <br>Speed: 6.94028204672897 <br>HR: 175.383177570093 <br>Cadence: 80.4485981308411 <br>Altitude: 27.985046728972","Mile: 5 <br>Speed: 6.79859621052632 <br>HR: 172.69298245614 <br>Cadence: 81.3245614035088 <br>Altitude: 14.8368421052632","Mile: 6 <br>Speed: 6.84808492982456 <br>HR: 175.333333333333 <br>Cadence: 81.780701754386 <br>Altitude: 26.0666666666667","Mile: 7 <br>Speed: 6.65007464705882 <br>HR: 175.352941176471 <br>Cadence: 79.4705882352941 <br>Altitude: 22.6436974789916","Mile: 8 <br>Speed: 6.82514246280992 <br>HR: 177.280991735537 <br>Cadence: 81.7851239669422 <br>Altitude: 42.1074380165289","Mile: 9 <br>Speed: 6.75896050862069 <br>HR: 177.534482758621 <br>Cadence: 82.5948275862069 <br>Altitude: 37.3586206896552","Mile: Start <br>Speed: 6.53191371774194 <br>HR: 168.548387096774 <br>Cadence: 80.9112903225806 <br>Altitude: 68.2774193548387"],null,["1","10","11","12","13","14","15","17","18","19","2","20","21","22","23","24","25","26-Finish","3","4","5","6","7","8","9","Start"],{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addProviderTiles","args":["CartoDB.Positron",null,null,{"errorTileUrl":"","noWrap":false,"detectRetina":false}]}],"limits":{"lat":[40.6043989839213,40.8118997489457],"lng":[-74.0517789316213,-73.928230043045]}},"evals":[],"jsHooks":[]}</script>
 <p>The leaflet plot above demonstrates Emma’s NYCM racing path. Each
-marker indicates the mile number and average speed (meters/sec), heart
+marker indicates the mile number and average speed (miles/hour), heart
 rate, cadence, and altitude for that mile. As a note, Strava failed to
 record information for Mile 3, and is therefore not included in the
 leaflet above.</p>
@@ -916,6 +939,23 @@ leaflet above.</p>
 <h2>Additional Analysis</h2>
 <div id="speed-regression-models" class="section level3">
 <h3>Speed Regression Models</h3>
+<p>Based on Emma’s recount of personal experience, she perceives
+environmental factors to be significant predictors of her performance.
+More specifically, weather conditions such as temperature, humidity,
+dewpoint, and windspeed affect Emma’s perceived running experience.
+Additionally, due to the irregular environmental conditions on race day,
+we generated several models to investigate which environmental factors
+would be best predictors for Emma’s performance. We hypothesize that
+Emma’s average speed is dependent on temperature. To test this
+hypothesis, we built the following models:</p>
+<ul>
+<li>Average speed vs temperature</li>
+<li>Average speed vs dewpoint</li>
+<li>Average speed vs humidity</li>
+<li>Average speed vs elevation gain and wind speed, and all
+interactions</li>
+<li>Average speed vs temperature and dewpoint, and all interactions</li>
+</ul>
 <pre class="r"><code>fit1 = lm(average_speed ~ weather_temperature, data = tidy_training)
 fit2 = lm(average_speed ~ dewpoint, data = tidy_training)
 fit3 = lm(average_speed ~ humidity, data = tidy_training)
@@ -924,6 +964,18 @@ fit5 = lm(average_speed ~ (weather_temperature + dewpoint)^3, data = tidy_traini
 </div>
 <div id="cross-validation-speed" class="section level3">
 <h3>Cross-Validation: Speed</h3>
+<p>We can now perform a comparison between the five models in terms of
+cross-validated prediction error. To do this, we first create a
+cross-validation data frame <code>cv_df</code>. Contained within
+<code>cv_df</code> is 2 side-by-side list columns with the testing and
+training data split pairs, with a corresponding ID number for each pair.
+Since we are able to apply resample objects directly into
+<code>lm</code> functions, we can skip the extra step of converting the
+testing and training data into tibbles. Next, we apply the
+<code>map</code> function to map each regression model to the training
+data. Finally, we can compute the root mean squared errors (RMSEs) for
+each model by applying the <code>map2_dbl</code> function to the testing
+data.</p>
 <pre class="r"><code>cv_df = 
   crossv_mc(tidy_training, 100)
 
@@ -964,8 +1016,8 @@ cv_df %&gt;%
                               &quot;mod3&quot; = &quot;Humidity Model&quot;,
                               &quot;mod4&quot; = &quot;Elevation, Wind, \n Interactions&quot;,
                               &quot;mod5&quot; = &quot;Temperature, Dewpoint, \n Interactions&quot;))</code></pre>
-<p><img src="final_report_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
-<pre class="r"><code>summary(fit1)</code></pre>
+<p><img src="final_report_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<pre class="r"><code>summary(fit1) </code></pre>
 <pre><code>## 
 ## Call:
 ## lm(formula = average_speed ~ weather_temperature, data = tidy_training)
@@ -985,9 +1037,26 @@ cv_df %&gt;%
 ##   (23 observations deleted due to missingness)
 ## Multiple R-squared:  0.05483,    Adjusted R-squared:  0.04344 
 ## F-statistic: 4.815 on 1 and 83 DF,  p-value: 0.03101</code></pre>
+<p>Based on the distributions depicted above, we can conclude that the
+model with temperature is able to generate better predictions than the
+other models with environmental factors. The p-value for this model is
+0.03101. As it is below the significance level of 0.05, we can conclude
+that this model is a good predictor for average speed.</p>
 </div>
 <div id="relative-effort-regression-models" class="section level3">
 <h3>Relative Effort Regression Models</h3>
+<p>Additionally, we hypothesize that Emma’s relative effort is dependent
+on temperature. To test this hypothesis, we built the following
+models:</p>
+<ul>
+<li>Relative effort vs temperature</li>
+<li>Relative effort vs dewpoint</li>
+<li>Relative effort vs humidity</li>
+<li>Relative effort vs elevation gain and wind speed, and all
+interactions</li>
+<li>Relative effort vs temperature and dewpoint, and all
+interactions</li>
+</ul>
 <pre class="r"><code>fit1 = lm(relative_effort ~ weather_temperature, data = tidy_training)
 fit2 = lm(relative_effort ~ dewpoint, data = tidy_training)
 fit3 = lm(relative_effort ~ humidity, data = tidy_training)
@@ -996,6 +1065,7 @@ fit5 = lm(relative_effort ~ (weather_temperature + dewpoint + humidity)^4, data 
 </div>
 <div id="cross-validation-relative-effort" class="section level3">
 <h3>Cross-Validation: Relative Effort</h3>
+<p>We followed the same cross validation process as above.</p>
 <pre class="r"><code>cv_df = 
   crossv_mc(tidy_training, 100)
 
@@ -1036,7 +1106,7 @@ cv_df %&gt;%
                               &quot;mod3&quot; = &quot;Humidity Model&quot;,
                               &quot;mod4&quot; = &quot;Elevation, Wind, \n Interactions&quot;,
                               &quot;mod5&quot; = &quot;Temperature, Dewpoint, \n Humidity, Interactions&quot;))</code></pre>
-<p><img src="final_report_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
+<p><img src="final_report_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
 <pre class="r"><code>summary(fit4)</code></pre>
 <pre><code>## 
 ## Call:
@@ -1060,10 +1130,49 @@ cv_df %&gt;%
 ##   (23 observations deleted due to missingness)
 ## Multiple R-squared:  0.6311, Adjusted R-squared:  0.6175 
 ## F-statistic: 46.19 on 3 and 81 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>Based on the distributions depicted above, we can conclude that the
+model with elevation, wind, and interactions is able to generate better
+predictions than the other models with environmental factors. The
+p-value for this model is &lt; 2.2 e-16. As it is below the significance
+level, we can conclude that this model is a good predictor for average
+speed.</p>
 </div>
 </div>
 <div id="discussion" class="section level2">
 <h2>Discussion</h2>
+<p>Our analysis sought to analyze the impact of external factors, such
+as temperature, wind, elevation, etc., on Emma’s speed and performance
+during the NYC Marathon, while also considering how training changed
+over time in order to improve her training for the next marathon.</p>
+<p>To investigate the impact of these external factors, we created a
+series of plots demonstrating the relationship between external
+temperature and humidity with Emma’s average speed, heart rate, and
+relative effort. We expected external temperature and humidity to be
+inversely related with Emma’s average speed, heart rate, and relative
+effort. However, the plots created demonstrated that while temperature
+varied between 6.58˚C to 27.89˚C, Emma’s average speed, heart rate, and
+relative effort remained relatively stable. Emma’s average speed was
+approximately 3 meters/second throughout her training period. Her
+average heart rate remained around 155 throughout her training period,
+and her relative effort remained around 150. Similarly, the plots
+created demonstrated that while humidity varied between 325 and 96%,
+Emma’s average speed, heart rate, and relative effort remained
+relatively stable. Although we had hypothesized that external
+temperature and humidity would have a greater impact on Emma’s
+performance throughout her training period, our analysis demonstrated
+otherwise, indicating that Emma’s body is more resilient to external
+factors than expected.</p>
+<p>Additionally, from our prediction models, we can conclude that
+temperature is a good predictor for average speed, with a p-value of
+0.03101 and that elevation, wind, and is interactions are a good
+predictor for relative effort, with a p-value of &lt;2.2 e-16. If Emma
+integrates into her training varying temperature conditions in addition
+to different elevation changes, this would help better prepare her for
+her next marathon.</p>
+<p>In preparation for Emma’s next marathon, this data analysis reveals
+that it would be most effective to consider temperature and elevation of
+her next marathon’s race course.</p>
+<p>Go Emma!!!</p>
 </div>
 
 
